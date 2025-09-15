@@ -49,6 +49,9 @@ class AsepriteAnimationLoader:
         # Create fallbacks for missing animations
         self._ensure_all_animations_exist()
         
+        # Manual fix for death animation (Aseprite tag has wrong frame indices)
+        self._fix_death_animation()
+        
         return True
         
     def _load_animation(self, key: str, aseprite_name: str):
@@ -135,6 +138,58 @@ class AsepriteAnimationLoader:
                 print(f"Using fallback for animation '{anim_name}'")
             elif anim_name not in self.animations:
                 print(f"Warning: Animation '{anim_name}' not found and no fallback available")
+                
+    def _fix_death_animation(self):
+        """Manual fix for death animation - Aseprite tag has wrong frame indices."""
+        # The death animation tag points to frames 148-153, but actual death frames are at 142-147
+        if 'death' not in self.animations or len(self.animations['death']['surfaces_right']) == 0:
+            print("Fixing death animation with correct frame indices...")
+            
+            # Get the correct death frame indices (142-147 for death_0 through death_5)
+            death_frame_indices = list(range(142, 148))  # 142, 143, 144, 145, 146, 147
+            
+            right_surfaces = []
+            left_surfaces = []
+            piv_right = []
+            piv_left = []
+            durations = []
+            
+            for frame_index in death_frame_indices:
+                if frame_index in self.aseprite_loader.frame_index_map:
+                    frame_name = self.aseprite_loader.frame_index_map[frame_index]
+                    if frame_name in self.aseprite_loader.frames:
+                        frame = self.aseprite_loader.frames[frame_name]
+                        
+                        # Get frame surface
+                        surface = self.aseprite_loader.get_frame_surface(frame)
+                        
+                        # Create flipped version
+                        flipped_surface = pygame.transform.flip(surface, True, False)
+                        
+                        right_surfaces.append(surface)
+                        left_surfaces.append(flipped_surface)
+                        
+                        # Calculate pivot points
+                        pivot_x, pivot_y = self.pivot_point
+                        piv_right.append((pivot_x, pivot_y))
+                        flipped_pivot_x = surface.get_width() - pivot_x
+                        piv_left.append((flipped_pivot_x, pivot_y))
+                        
+                        # Store frame duration
+                        durations.append(frame.duration / 1000.0)
+            
+            if right_surfaces:
+                self.animations['death'] = {
+                    'surfaces_right': right_surfaces,
+                    'surfaces_left': left_surfaces,
+                    'pivots_right': piv_right,
+                    'pivots_left': piv_left,
+                    'durations': durations,
+                    'direction': 'forward'
+                }
+                print(f"Death animation fixed: {len(right_surfaces)} frames loaded")
+            else:
+                print("Failed to fix death animation - no frames found")
                 
     def get_animation(self, name: str) -> Optional[Dict]:
         """Get animation data by name."""

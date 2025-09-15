@@ -432,11 +432,11 @@ class Player:
                                 self.current_frame = len(frames) - 1
                                 
                                 # Handle special animation completions
-                                if self.state == "Appear Tele":
+                                if self.state == "spawn":
                                     self.is_spawning = False
                                     self.is_invulnerable = False  # End spawn invulnerability
                                     print("Player spawn complete")  # Debug output
-                                elif self.state == "Hit":
+                                elif self.state == "hit":
                                     # Hit animation complete, but invulnerability may continue
                                     pass  # Let invulnerability timer handle state change
                                 elif self.state == "death":
@@ -457,11 +457,11 @@ class Player:
                                 self.current_frame = len(frames) - 1
                                 
                                 # Handle special animation completions
-                                if self.state == "Appear Tele":
+                                if self.state == "spawn":
                                     self.is_spawning = False
                                     self.is_invulnerable = False  # End spawn invulnerability
                                     print("Player spawn complete")  # Debug output
-                                elif self.state == "Hit":
+                                elif self.state == "hit":
                                     # Hit animation complete, but invulnerability may continue
                                     pass  # Let invulnerability timer handle state change
                                 elif self.state == "death":
@@ -529,6 +529,12 @@ class Player:
             if self.invulnerability_timer >= self.invulnerability_duration:
                 self.is_invulnerable = False
                 self.invulnerability_timer = 0.0
+                # If player was in hit state, transition back to normal state
+                if self.state == "hit" and not self.is_dead:
+                    # Reset to idle so normal animation logic can take over
+                    self.state = "idle"
+                    self.current_frame = 0
+                    self.frame_timer = 0.0
         
         # Update spawn timer
         if self.is_spawning:
