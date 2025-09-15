@@ -236,6 +236,12 @@ class Game:
             for enemy in self.enemies:
                 enemy.update(dt, self.world)
             
+            # Remove dead enemies
+            self._remove_dead_enemies()
+            
+            # Check for player attacks hitting enemies
+            self._check_player_enemy_collisions()
+            
             # Update camera to follow player with velocity for lookahead
             self.camera.follow_target(
                 self.player.pos_x, 
@@ -285,6 +291,71 @@ class Game:
             self.player.velocity_y = 0.0
             self.player.on_ground = False
             print("Player respawned!")
+    
+    def _check_player_enemy_collisions(self):
+        """Check for collisions between player attacks and enemies."""
+        if not self.player or not self.player.is_attacking:
+            return
+            
+        # Get player attack box when attacking
+        attack_box = self._get_player_attack_box()
+        if not attack_box:
+            return
+            
+        # Check collision with each enemy
+        for enemy in self.enemies:
+            if self._check_enemy_hit_by_attack(enemy, attack_box):
+                enemy.take_damage(1)  # Deal 1 damage to enemy
+    
+    def _get_player_attack_box(self):
+        """Get the collision box for the player's current attack."""
+        if not self.player or not self.player.is_attacking:
+            return None
+            
+        # Attack box dimensions (adjust these values based on the attack animation)
+        attack_width = 40 * self.scale  # Width of attack reach
+        attack_height = 25 * self.scale  # Height of attack reach
+        
+        # Calculate attack box position based on player position and direction
+        if self.player.direction == 1:  # Facing right
+            attack_x = self.player.pos_x + 10  # Offset forward from player
+        else:  # Facing left
+            attack_x = self.player.pos_x - attack_width - 10  # Offset forward from player
+            
+        attack_y = self.player.pos_y - attack_height + 5  # Slightly above player feet
+        
+        return {
+            'x': attack_x,
+            'y': attack_y, 
+            'width': attack_width,
+            'height': attack_height
+        }
+    
+    def _check_enemy_hit_by_attack(self, enemy, attack_box):
+        """Check if an enemy is hit by the player's attack box."""
+        # Enemy collision box (approximate enemy size)
+        enemy_width = 20 * enemy.scale
+        enemy_height = 30 * enemy.scale
+        enemy_x = enemy.pos_x - enemy_width // 2
+        enemy_y = enemy.pos_y - enemy_height
+        
+        # Check rectangle overlap
+        return (attack_box['x'] < enemy_x + enemy_width and
+                attack_box['x'] + attack_box['width'] > enemy_x and
+                attack_box['y'] < enemy_y + enemy_height and
+                attack_box['y'] + attack_box['height'] > enemy_y)
+    
+    def _remove_dead_enemies(self):
+        """Remove enemies that are marked for removal after death animation."""
+        enemies_to_remove = []
+        for i, enemy in enumerate(self.enemies):
+            if enemy.marked_for_removal:
+                enemies_to_remove.append(i)
+                print(f"Removing dead enemy at position {enemy.pos_x}, {enemy.pos_y}")  # Debug output
+        
+        # Remove enemies in reverse order to avoid index shifting
+        for i in reversed(enemies_to_remove):
+            del self.enemies[i]
     
     def _render_game(self):
         """Render the game world and objects."""
