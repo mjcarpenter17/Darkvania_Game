@@ -242,6 +242,13 @@ class Game:
             # Check for player attacks hitting enemies
             self._check_player_enemy_collisions()
             
+            # Check for enemies hitting player
+            self._check_enemy_player_collisions()
+            
+            # Check if player requested respawn
+            if self.player.respawn_requested:
+                self._handle_player_respawn()
+            
             # Update camera to follow player with velocity for lookahead
             self.camera.follow_target(
                 self.player.pos_x, 
@@ -304,8 +311,11 @@ class Game:
             
         # Check collision with each enemy
         for enemy in self.enemies:
-            if self._check_enemy_hit_by_attack(enemy, attack_box):
+            # Only hit enemies that haven't been hit during this attack
+            if (id(enemy) not in self.player.enemies_hit_this_attack and 
+                self._check_enemy_hit_by_attack(enemy, attack_box)):
                 enemy.take_damage(1)  # Deal 1 damage to enemy
+                self.player.enemies_hit_this_attack.add(id(enemy))  # Mark this enemy as hit
     
     def _get_player_attack_box(self):
         """Get the collision box for the player's current attack."""
@@ -345,6 +355,66 @@ class Game:
                 attack_box['y'] < enemy_y + enemy_height and
                 attack_box['y'] + attack_box['height'] > enemy_y)
     
+    def _check_enemy_player_collisions(self):
+        """Check for collisions between enemies and the player."""
+        if not self.player or self.player.is_dead or self.player.is_spawning:
+            return
+        
+        # Player collision box
+        player_width = 20 * self.scale
+        player_height = 35 * self.scale
+        player_x = self.player.pos_x - player_width // 2
+        player_y = self.player.pos_y - player_height
+        
+        # Check collision with each enemy
+        for enemy in self.enemies:
+            if enemy.ai_state == "death":  # Skip dead enemies
+                continue
+                
+            # Enemy collision box
+            enemy_width = 20 * enemy.scale
+            enemy_height = 30 * enemy.scale
+            enemy_x = enemy.pos_x - enemy_width // 2
+            enemy_y = enemy.pos_y - enemy_height
+            
+            # Check rectangle overlap
+            if (player_x < enemy_x + enemy_width and
+                player_x + player_width > enemy_x and
+                player_y < enemy_y + enemy_height and
+                player_y + player_height > enemy_y):
+                
+                # Player hit by enemy
+                if self.player.take_damage(1):
+                    print(f"Player hit by enemy! Health: {self.player.health}/{self.player.max_health}")
+                    break  # Only hit by one enemy per frame
+    
+    def _handle_player_respawn(self):
+        """Handle player respawn by restarting the level."""
+        if not self.player or not self.world:
+            return
+        
+        print("Handling player respawn - restarting level")
+        
+        # Reset player
+        self.player.health = self.player.max_health
+        self.player.is_dead = False
+        self.player.is_invulnerable = False
+        self.player.invulnerability_timer = 0.0
+        self.player.respawn_requested = False
+        
+        # Reset player position to spawn point
+        spawn_pos = self.world.find_spawn_point("Player")
+        if spawn_pos:
+            self.player.set_position(spawn_pos[0], spawn_pos[1])
+        
+        # Start spawn animation
+        self.player.start_spawn()
+        
+        # Recreate enemies (restart level)
+        self._create_enemies()
+        
+        print("Level restarted, player respawned")
+    
     def _remove_dead_enemies(self):
         """Remove enemies that are marked for removal after death animation."""
         enemies_to_remove = []
@@ -373,6 +443,13 @@ class Game:
             
             # Render player
             self.player.draw(self.screen, camera_x, camera_y)
+            
+            # Render health UI
+            self._render_health_ui()
+            
+            # Render death/respawn UI if player is dead
+            if self.player.is_dead:
+                self._render_respawn_ui()
             
             # Render debug info
             if self.debug_collision:
@@ -412,6 +489,83 @@ class Game:
         for i, text in enumerate(instructions):
             text_surf = font.render(text, True, (255, 255, 255))
             self.screen.blit(text_surf, (10, self.height - 80 + i * 25))
+    
+    def _render_health_ui(self):
+        """Render the player health UI in the top-left corner."""
+        if not self.player:
+            return
+        
+        font = pygame.font.Font(None, 36)
+        health_text = f"Health: {self.player.health}/{self.player.max_health}"
+        
+        # Render health text with outline for visibility
+        outline_color = (0, 0, 0)
+        text_color = (255, 255, 255) if self.player.health > 0 else (255, 0, 0)
+        
+        # Render outline
+        for dx in [-1, 0, 1]:
+            for dy in [-1, 0, 1]:
+                if dx != 0 or dy != 0:
+                    outline_surf = font.render(health_text, True, outline_color)
+                    self.screen.blit(outline_surf, (10 + dx, 10 + dy))
+        
+        # Render main text
+        text_surf = font.render(health_text, True, text_color)
+        self.screen.blit(text_surf, (10, 10))
+        
+        # Render health hearts for visual representation
+        heart_size = 20
+        heart_spacing = 25
+        for i in range(self.player.max_health):
+            heart_x = 10 + i * heart_spacing
+            heart_y = 50
+            
+            if i < self.player.health:
+                # Full heart (red)
+                pygame.draw.polygon(self.screen, (255, 0, 0), [
+                    (heart_x + 10, heart_y + 15),  # Bottom point
+                    (heart_x + 3, heart_y + 8),   # Left curve
+                    (heart_x + 3, heart_y + 5),   # Left top
+                    (heart_x + 7, heart_y + 2),   # Left peak
+                    (heart_x + 10, heart_y + 5),  # Center dip
+                    (heart_x + 13, heart_y + 2),  # Right peak
+                    (heart_x + 17, heart_y + 5),  # Right top
+                    (heart_x + 17, heart_y + 8),  # Right curve
+                ])
+            else:
+                # Empty heart (outline only)
+                pygame.draw.polygon(self.screen, (100, 100, 100), [
+                    (heart_x + 10, heart_y + 15),  # Bottom point
+                    (heart_x + 3, heart_y + 8),   # Left curve
+                    (heart_x + 3, heart_y + 5),   # Left top
+                    (heart_x + 7, heart_y + 2),   # Left peak
+                    (heart_x + 10, heart_y + 5),  # Center dip
+                    (heart_x + 13, heart_y + 2),  # Right peak
+                    (heart_x + 17, heart_y + 5),  # Right top
+                    (heart_x + 17, heart_y + 8),  # Right curve
+                ], 2)
+    
+    def _render_respawn_ui(self):
+        """Render the respawn prompt when player is dead."""
+        # Semi-transparent overlay
+        overlay = pygame.Surface((self.width, self.height))
+        overlay.set_alpha(128)
+        overlay.fill((0, 0, 0))
+        self.screen.blit(overlay, (0, 0))
+        
+        # Death and respawn text
+        font_large = pygame.font.Font(None, 72)
+        font_medium = pygame.font.Font(None, 48)
+        
+        # "YOU DIED" text
+        death_text = font_large.render("YOU DIED", True, (255, 0, 0))
+        death_rect = death_text.get_rect(center=(self.width // 2, self.height // 2 - 50))
+        self.screen.blit(death_text, death_rect)
+        
+        # "Press SPACE to Respawn" text
+        respawn_text = font_medium.render("Press SPACE to Respawn", True, (255, 255, 255))
+        respawn_rect = respawn_text.get_rect(center=(self.width // 2, self.height // 2 + 20))
+        self.screen.blit(respawn_text, respawn_rect)
     
     def _cleanup_game(self):
         """Clean up game objects."""

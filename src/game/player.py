@@ -45,6 +45,23 @@ class Player:
         self.combo_window_timer = 0.0  # Timer for combo window
         self.combo_window_active = False  # Is combo window currently active
         
+        # Attack hit tracking (to prevent multiple hits per attack)
+        self.enemies_hit_this_attack = set()  # Track which enemies have been hit during current attack
+        
+        # Health and damage system
+        self.max_health = 2
+        self.health = self.max_health
+        self.is_invulnerable = False  # Invulnerability frames after taking damage
+        self.invulnerability_timer = 0.0
+        self.invulnerability_duration = 1.0  # 1 second of invulnerability after being hit
+        self.is_dead = False
+        self.respawn_requested = False  # Flag for when respawn is requested
+        
+        # Spawn system
+        self.is_spawning = False
+        self.spawn_timer = 0.0
+        self.spawn_duration = 0.6  # Duration of "Appear Tele" animation
+        
         # Input state tracking (to detect key press events, not continuous holding)
         self.prev_input_state = {}
         
@@ -59,18 +76,42 @@ class Player:
         self.animation_loader = AsepriteAnimationLoader(aseprite_json_path, scale)
         self.animation_loader.load_all_animations()
         
+        # Start with spawn animation
+        self.start_spawn()
+        
+    def start_spawn(self):
+        """Start the spawn animation sequence."""
+        self.is_spawning = True
+        self.spawn_timer = 0.0
+        self.is_invulnerable = True  # Invulnerable during spawn
+        self.state = "Appear Tele"
+        self.current_frame = 0
+        self.frame_timer = 0.0
+        self.velocity_x = 0.0
+        self.velocity_y = 0.0
+        print("Player spawning with Appear Tele animation")  # Debug output
+        
     def update(self, dt: float, input_state: dict, world_map=None):
         """Update player physics, animation, and collision."""
-        # Handle input
-        self._handle_input(input_state, dt)
+        # Update health and combat timers
+        self._update_health_timers(dt)
         
-        # Apply physics
-        self._apply_physics(dt)
+        # Handle input (skip if dead or spawning)
+        if not self.is_dead and not self.is_spawning:
+            self._handle_input(input_state, dt)
+        elif self.is_spawning:
+            self._handle_spawn_input(input_state, dt)
+        elif self.is_dead:
+            self._handle_death_input(input_state, dt)
         
-        # Handle collisions if world map is provided
-        if world_map:
+        # Apply physics (skip if dead)
+        if not self.is_dead:
+            self._apply_physics(dt)
+        
+        # Handle collisions if world map is provided (skip if dead or spawning)
+        if world_map and not self.is_dead and not self.is_spawning:
             self._handle_collisions(world_map, dt)
-        else:
+        elif not self.is_dead:
             # Fallback collision (ground level)
             self._handle_basic_collision()
         
@@ -174,6 +215,7 @@ class Player:
         self.state = f"attack{attack_number}"
         self.current_frame = 0
         self.frame_timer = 0.0
+        self.enemies_hit_this_attack.clear()  # Clear hit tracking for new attack
         print(f"Started Slash {attack_number}")  # Debug output
         
     def _queue_combo_attack(self):
@@ -421,3 +463,81 @@ class Player:
         """Set player position."""
         self.pos_x = x
         self.pos_y = y
+    
+    def _update_health_timers(self, dt: float):
+        """Update health-related timers."""
+        # Update invulnerability timer
+        if self.is_invulnerable:
+            self.invulnerability_timer += dt
+            if self.invulnerability_timer >= self.invulnerability_duration:
+                self.is_invulnerable = False
+                self.invulnerability_timer = 0.0
+        
+        # Update spawn timer
+        if self.is_spawning:
+            self.spawn_timer += dt
+            if self.spawn_timer >= self.spawn_duration:
+                self._complete_spawn()
+    
+    def _complete_spawn(self):
+        """Complete the spawn sequence."""
+        self.is_spawning = False
+        self.spawn_timer = 0.0
+        self.is_invulnerable = False
+        self.state = "idle"
+        self.current_frame = 0
+        self.frame_timer = 0.0
+        print("Player spawn complete")  # Debug output
+    
+    def _handle_spawn_input(self, input_state: dict, dt: float):
+        """Handle input during spawn animation (no input allowed)."""
+        pass  # No input during spawn
+    
+    def _handle_death_input(self, input_state: dict, dt: float):
+        """Handle input during death state (only respawn key)."""
+        # Check for respawn key (Space)
+        space = input_state.get('jump', False)  # Using jump key as Space
+        prev_space = self.prev_input_state.get('jump', False)
+        
+        if space and not prev_space:  # Space key pressed
+            self.respawn()
+    
+    def take_damage(self, damage: int):
+        """Apply damage to the player."""
+        if self.is_invulnerable or self.is_dead or self.is_spawning:
+            return False  # No damage taken
+        
+        self.health -= damage
+        print(f"Player hit! Health: {self.health}/{self.max_health}")  # Debug output
+        
+        if self.health <= 0:
+            self._trigger_death()
+        else:
+            self._trigger_hit()
+        
+        return True  # Damage was applied
+    
+    def _trigger_hit(self):
+        """Handle player taking non-fatal damage."""
+        self.is_invulnerable = True
+        self.invulnerability_timer = 0.0
+        self.state = "Hit"
+        self.current_frame = 0
+        self.frame_timer = 0.0
+        self.velocity_x *= 0.5  # Reduce velocity on hit
+    
+    def _trigger_death(self):
+        """Handle player death."""
+        self.is_dead = True
+        self.health = 0
+        self.state = "death"
+        self.current_frame = 0
+        self.frame_timer = 0.0
+        self.velocity_x = 0.0
+        self.velocity_y = 0.0
+        print("Player died!")  # Debug output
+    
+    def respawn(self):
+        """Request respawn (to be handled by game class)."""
+        self.respawn_requested = True
+        print("Player respawn requested!")  # Debug output
