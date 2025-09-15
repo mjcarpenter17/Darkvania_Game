@@ -411,7 +411,7 @@ class Game:
         self.player.start_spawn()
         
         # Recreate enemies (restart level)
-        self._create_enemies()
+        self._spawn_enemies()
         
         print("Level restarted, player respawned")
     
