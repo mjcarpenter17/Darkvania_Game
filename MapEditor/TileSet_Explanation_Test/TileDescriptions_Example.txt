@@ -1,0 +1,15 @@
+Tiles numbers (location in tileset sheet) - Description
+
+50 - Top Left Corner Solid
+51 - Top Solid
+52 - Top Right Corner Solid
+
+55 - Left Side Platform
+57 - Middle Platform
+59 - Right Side Platform
+74 - Left Side Solid
+75 - Middle Black Fill
+76 - Right side Solid
+98 - Bottom Left Corner Solid
+99 - Bottom Solid
+100 - Top Right Corner Solid

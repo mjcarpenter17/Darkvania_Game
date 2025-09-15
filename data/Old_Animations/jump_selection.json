@@ -1,0 +1,38 @@
+{
+  "sheet": "Assests/Sword Master Sprite Sheet 90x37.png",
+  "frame_size": [
+    90,
+    37
+  ],
+  "margin": 0,
+  "spacing": 0,
+  "rows": 27,
+  "cols": 10,
+  "order": "selection-order",
+  "frames": [
+    {
+      "x": 0,
+      "y": 481,
+      "w": 90,
+      "h": 37,
+      "row": 13,
+      "col": 0
+    },
+    {
+      "x": 90,
+      "y": 481,
+      "w": 90,
+      "h": 37,
+      "row": 13,
+      "col": 1
+    },
+    {
+      "x": 180,
+      "y": 481,
+      "w": 90,
+      "h": 37,
+      "row": 13,
+      "col": 2
+    }
+  ]
+}

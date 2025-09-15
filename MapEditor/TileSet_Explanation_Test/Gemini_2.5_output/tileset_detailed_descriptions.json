@@ -1,0 +1,1126 @@
+{
+    "0": {
+        "type": "solid",
+        "description": "example Grey block"
+    },
+    "3": {
+        "type": "solid",
+        "description": "Bottom edge solid block (ceiling)"
+    },
+    "4": {
+        "type": "solid",
+        "description": "Bottom edge solid block (ceiling)"
+    },
+    "5": {
+        "type": "solid",
+        "description": "Bottom edge solid block (ceiling)"
+    },
+    "7": {
+        "type": "solid",
+        "description": "Top edge solid block (floor)"
+    },
+    "8": {
+        "type": "solid",
+        "description": "Top edge solid block (floor)"
+    },
+    "9": {
+        "type": "solid",
+        "description": "Top edge solid block (floor)"
+    },
+    "11": {
+        "type": "decoration",
+        "description": "Decoration - grass tuft (left)"
+    },
+    "12": {
+        "type": "decoration",
+        "description": "Decoration - grass tuft (center)"
+    },
+    "13": {
+        "type": "decoration",
+        "description": "Decoration - grass tuft (right)"
+    },
+    "25": {
+        "type": "decoration",
+        "description": "Decoration - corner grass (left edge, descending)"
+    },
+    "26": {
+        "type": "decoration",
+        "description": "Decoration - grass tuft"
+    },
+    "27": {
+        "type": "decoration",
+        "description": "Decoration - grass tuft"
+    },
+    "28": {
+        "type": "decoration",
+        "description": "Decoration - grass tuft"
+    },
+    "29": {
+        "type": "decoration",
+        "description": "Decoration - detailed object micro-fragment (avg #9DA22C)"
+    },
+    "39": {
+        "type": "decoration",
+        "description": "Decoration - sparse foliage cluster (avg #90982D)"
+    },
+    "40": {
+        "type": "decoration",
+        "description": "Decoration - sparse foliage cluster (avg #88932E)"
+    },
+    "41": {
+        "type": "decoration",
+        "description": "Decoration - thin hanging vine or moss strand (avg #8A952E)"
+    },
+    "49": {
+        "type": "decoration",
+        "description": "Decoration - sparse foliage cluster (avg #91992D)"
+    },
+    "50": {
+        "type": "solid",
+        "description": "Top left corner solid block"
+    },
+    "51": {
+        "type": "solid",
+        "description": "Top edge solid block"
+    },
+    "52": {
+        "type": "solid",
+        "description": "Top right corner solid block"
+    },
+    "53": {
+        "type": "decoration",
+        "description": "Decoration - detailed object micro-fragment (avg #969D2C)"
+    },
+    "55": {
+        "type": "platform",
+        "description": "Left side platform (one-way)"
+    },
+    "56": {
+        "type": "platform",
+        "description": "Left side platform (one-way)"
+    },
+    "57": {
+        "type": "platform",
+        "description": "Middle platform (one-way)"
+    },
+    "58": {
+        "type": "platform",
+        "description": "Right side platform (one-way)"
+    },
+    "59": {
+        "type": "platform",
+        "description": "Right side platform (one-way)"
+    },
+    "62": {
+        "type": "solid",
+        "description": "Top left corner solid block"
+    },
+    "63": {
+        "type": "solid",
+        "description": "Top edge solid block"
+    },
+    "64": {
+        "type": "solid",
+        "description": "Top edge solid block"
+    },
+    "65": {
+        "type": "solid",
+        "description": "Top edge solid block"
+    },
+    "66": {
+        "type": "solid",
+        "description": "Top right corner solid block"
+    },
+    "67": {
+        "type": "decoration",
+        "description": "Decoration - detailed object micro-fragment (avg #959C2C)"
+    },
+    "73": {
+        "type": "decoration",
+        "description": "Decoration - detailed object micro-fragment (avg #9BA12C)"
+    },
+    "74": {
+        "type": "solid",
+        "description": "Left side solid block"
+    },
+    "75": {
+        "type": "solid",
+        "description": "Middle black fill solid block"
+    },
+    "76": {
+        "type": "solid",
+        "description": "Right side solid block"
+    },
+    "77": {
+        "type": "decoration",
+        "description": "Decoration - detailed object micro-fragment (avg #9BA12C)"
+    },
+    "79": {
+        "type": "decoration",
+        "description": "Decoration - thin hanging vine or moss strand (avg #4A552C)"
+    },
+    "80": {
+        "type": "decoration",
+        "description": "Decoration - thin hanging vine or moss strand (avg #5F6B2D)"
+    },
+    "81": {
+        "type": "decoration",
+        "description": "Decoration - thin hanging vine or moss strand (avg #6E7A2E)"
+    },
+    "82": {
+        "type": "decoration",
+        "description": "Decoration - thin hanging vine or moss strand (avg #606B2D)"
+    },
+    "83": {
+        "type": "decoration",
+        "description": "Decoration - thin hanging vine or moss strand (avg #6C762D)"
+    },
+    "85": {
+        "type": "decoration",
+        "description": "Decoration - detailed object micro-fragment (avg #828930)"
+    },
+    "86": {
+        "type": "solid",
+        "description": "Left side solid block"
+    },
+    "87": {
+        "type": "solid",
+        "description": "Middle fill solid block"
+    },
+    "88": {
+        "type": "solid",
+        "description": "Middle fill solid block"
+    },
+    "89": {
+        "type": "solid",
+        "description": "Middle fill solid block"
+    },
+    "90": {
+        "type": "solid",
+        "description": "Right side solid block"
+    },
+    "91": {
+        "type": "decoration",
+        "description": "Decoration - sparse foliage cluster (avg #5C6526)"
+    },
+    "97": {
+        "type": "decoration",
+        "description": "Decoration - detailed object micro-fragment (avg #939B2D)"
+    },
+    "98": {
+        "type": "solid",
+        "description": "Bottom left corner solid block"
+    },
+    "99": {
+        "type": "solid",
+        "description": "Bottom edge solid block"
+    },
+    "100": {
+        "type": "solid",
+        "description": "Bottom right corner solid block"
+    },
+    "101": {
+        "type": "decoration",
+        "description": "Decoration - detailed object micro-fragment (avg #9BA12C)"
+    },
+    "103": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #2C2D1C)"
+    },
+    "104": {
+        "type": "platform",
+        "description": "Left side platform (one-way)"
+    },
+    "105": {
+        "type": "platform",
+        "description": "Middle platform (one-way)"
+    },
+    "106": {
+        "type": "platform",
+        "description": "Right side platform (one-way)"
+    },
+    "107": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #2F301D)"
+    },
+    "110": {
+        "type": "solid",
+        "description": "Left side solid block"
+    },
+    "111": {
+        "type": "solid",
+        "description": "Middle fill solid block"
+    },
+    "112": {
+        "type": "solid",
+        "description": "Middle fill solid block"
+    },
+    "113": {
+        "type": "solid",
+        "description": "Middle fill solid block"
+    },
+    "114": {
+        "type": "solid",
+        "description": "Middle fill solid block"
+    },
+    "115": {
+        "type": "solid",
+        "description": "Top right corner solid block"
+    },
+    "116": {
+        "type": "decoration",
+        "description": "Decoration - sparse foliage cluster (avg #7B882F)"
+    },
+    "121": {
+        "type": "decoration",
+        "description": "Decoration - detailed object micro-fragment (avg #9DA22C)"
+    },
+    "122": {
+        "type": "platform",
+        "description": "Left side platform (one-way)"
+    },
+    "123": {
+        "type": "platform",
+        "description": "Middle platform (one-way)"
+    },
+    "124": {
+        "type": "platform",
+        "description": "Right side platform (one-way)"
+    },
+    "134": {
+        "type": "solid",
+        "description": "Bottom left corner solid block"
+    },
+    "135": {
+        "type": "solid",
+        "description": "Bottom edge solid block"
+    },
+    "136": {
+        "type": "solid",
+        "description": "Bottom edge solid block"
+    },
+    "137": {
+        "type": "solid",
+        "description": "Middle fill solid block"
+    },
+    "138": {
+        "type": "solid",
+        "description": "Right side solid block"
+    },
+    "139": {
+        "type": "decoration",
+        "description": "Decoration - detailed object micro-fragment (avg #676625)"
+    },
+    "140": {
+        "type": "decoration",
+        "description": "Decoration - detailed object micro-fragment (avg #939B2D)"
+    },
+    "146": {
+        "type": "solid",
+        "description": "Top left corner solid block"
+    },
+    "147": {
+        "type": "solid",
+        "description": "Top edge solid block"
+    },
+    "148": {
+        "type": "solid",
+        "description": "Top right corner solid block"
+    },
+    "151": {
+        "type": "platform",
+        "description": "Left side platform (one-way)"
+    },
+    "152": {
+        "type": "platform",
+        "description": "Right side platform (one-way)"
+    },
+    "158": {
+        "type": "platform",
+        "description": "Left side platform (one-way)"
+    },
+    "159": {
+        "type": "platform",
+        "description": "Middle platform (one-way)"
+    },
+    "160": {
+        "type": "platform",
+        "description": "Right side platform (one-way)"
+    },
+    "161": {
+        "type": "solid",
+        "description": "Left side solid block"
+    },
+    "162": {
+        "type": "solid",
+        "description": "Middle fill solid block"
+    },
+    "163": {
+        "type": "solid",
+        "description": "Top right corner solid block"
+    },
+    "164": {
+        "type": "decoration",
+        "description": "Decoration - detailed object micro-fragment (avg #66511F)"
+    },
+    "170": {
+        "type": "solid",
+        "description": "Left side solid block"
+    },
+    "172": {
+        "type": "solid",
+        "description": "Left side solid block"
+    },
+    "175": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #30331E)"
+    },
+    "176": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #31341F)"
+    },
+    "177": {
+        "type": "decoration",
+        "description": "Decoration - thin hanging vine or moss strand (avg #555E27)"
+    },
+    "178": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #3C431F)"
+    },
+    "179": {
+        "type": "solid",
+        "description": "Top left corner solid block"
+    },
+    "184": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #28251C)"
+    },
+    "185": {
+        "type": "solid",
+        "description": "Left side solid block"
+    },
+    "186": {
+        "type": "solid",
+        "description": "Middle fill solid block"
+    },
+    "187": {
+        "type": "solid",
+        "description": "Right side solid block"
+    },
+    "188": {
+        "type": "decoration",
+        "description": "Decoration - detailed object micro-fragment (avg #685B26)"
+    },
+    "194": {
+        "type": "solid",
+        "description": "Bottom left corner solid block"
+    },
+    "195": {
+        "type": "solid",
+        "description": "Top edge solid block"
+    },
+    "196": {
+        "type": "solid",
+        "description": "Bottom right corner solid block"
+    },
+    "201": {
+        "type": "solid",
+        "description": "Top left corner solid block"
+    },
+    "202": {
+        "type": "solid",
+        "description": "Top edge solid block"
+    },
+    "203": {
+        "type": "solid",
+        "description": "Bottom right corner solid block"
+    },
+    "204": {
+        "type": "decoration",
+        "description": "Decoration - large tree top right canopy section (avg #040404)"
+    },
+    "205": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #26231C)"
+    },
+    "206": {
+        "type": "decoration",
+        "description": "Decoration - large tree top right canopy section (avg #26271B)"
+    },
+    "207": {
+        "type": "solid",
+        "description": "Top left corner solid block"
+    },
+    "208": {
+        "type": "solid",
+        "description": "Top edge solid block"
+    },
+    "209": {
+        "type": "solid",
+        "description": "Bottom edge solid block"
+    },
+    "210": {
+        "type": "solid",
+        "description": "Bottom edge solid block"
+    },
+    "211": {
+        "type": "solid",
+        "description": "Bottom edge solid block"
+    },
+    "212": {
+        "type": "solid",
+        "description": "Top right corner solid block"
+    },
+    "213": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #373520)"
+    },
+    "214": {
+        "type": "decoration",
+        "description": "Decoration - thin hanging vine or moss strand (avg #657C34)"
+    },
+    "222": {
+        "type": "decoration",
+        "description": "Decoration - large tree top left canopy section (avg #040404)"
+    },
+    "223": {
+        "type": "decoration",
+        "description": "Decoration - large tree top center canopy section (avg #040404)"
+    },
+    "225": {
+        "type": "decoration",
+        "description": "Decoration - large tree top center canopy section (avg #040404)"
+    },
+    "228": {
+        "type": "decoration",
+        "description": "Decoration - large tree top right canopy section (avg #040404)"
+    },
+    "242": {
+        "type": "decoration",
+        "description": "Decoration - large tree top left canopy section (avg #040404)"
+    },
+    "243": {
+        "type": "decoration",
+        "description": "Decoration - large tree top left canopy section (avg #040404)"
+    },
+    "244": {
+        "type": "decoration",
+        "description": "Decoration - large tree top left canopy section (avg #040404)"
+    },
+    "245": {
+        "type": "decoration",
+        "description": "Decoration - large tree top left canopy section (avg #040404)"
+    },
+    "246": {
+        "type": "decoration",
+        "description": "Decoration - large tree top left canopy section (avg #040404)"
+    },
+    "247": {
+        "type": "decoration",
+        "description": "Decoration - large tree top center canopy section (avg #040404)"
+    },
+    "249": {
+        "type": "decoration",
+        "description": "Decoration - large tree top center canopy section (avg #040404)"
+    },
+    "250": {
+        "type": "decoration",
+        "description": "Decoration - large tree top center canopy section (avg #040404)"
+    },
+    "251": {
+        "type": "decoration",
+        "description": "Decoration - large tree top right canopy section (avg #040404)"
+    },
+    "252": {
+        "type": "decoration",
+        "description": "Decoration - large tree top right canopy section (avg #040404)"
+    },
+    "254": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #2C341A)"
+    },
+    "255": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #2C341A)"
+    },
+    "256": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #2C341A)"
+    },
+    "257": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #2A3118)"
+    },
+    "258": {
+        "type": "decoration",
+        "description": "Decoration - thin hanging vine or moss strand (avg #30381B)"
+    },
+    "260": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #2C341A)"
+    },
+    "262": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #2C341A)"
+    },
+    "266": {
+        "type": "decoration",
+        "description": "Decoration - large tree upper left canopy section (avg #040404)"
+    },
+    "267": {
+        "type": "platform",
+        "description": "Left side platform (one-way)"
+    },
+    "268": {
+        "type": "platform",
+        "description": "Right side platform (one-way)"
+    },
+    "269": {
+        "type": "decoration",
+        "description": "Decoration - large tree upper left canopy section (avg #040404)"
+    },
+    "270": {
+        "type": "decoration",
+        "description": "Decoration - large tree upper left canopy section (avg #040404)"
+    },
+    "271": {
+        "type": "decoration",
+        "description": "Decoration - large tree upper center canopy section (avg #040404)"
+    },
+    "272": {
+        "type": "decoration",
+        "description": "Decoration - large tree upper center canopy section (avg #040404)"
+    },
+    "273": {
+        "type": "decoration",
+        "description": "Decoration - large tree upper center canopy section (avg #040404)"
+    },
+    "274": {
+        "type": "decoration",
+        "description": "Decoration - large tree upper center canopy section (avg #040404)"
+    },
+    "275": {
+        "type": "decoration",
+        "description": "Decoration - large tree upper right canopy section (avg #040404)"
+    },
+    "276": {
+        "type": "decoration",
+        "description": "Decoration - large tree upper right canopy section (avg #040404)"
+    },
+    "284": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #2C341A)"
+    },
+    "286": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #2C341A)"
+    },
+    "290": {
+        "type": "decoration",
+        "description": "Decoration - large tree upper left canopy section (avg #040404)"
+    },
+    "293": {
+        "type": "decoration",
+        "description": "Decoration - large tree upper left canopy section (avg #040404)"
+    },
+    "294": {
+        "type": "decoration",
+        "description": "Decoration - large tree upper left canopy section (avg #040404)"
+    },
+    "295": {
+        "type": "solid",
+        "description": "Top left corner solid block"
+    },
+    "296": {
+        "type": "decoration",
+        "description": "Decoration - large tree upper center canopy section (avg #040404)"
+    },
+    "297": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #040404)"
+    },
+    "298": {
+        "type": "solid",
+        "description": "Top left corner solid block"
+    },
+    "299": {
+        "type": "solid",
+        "description": "Top right corner solid block"
+    },
+    "300": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #040404)"
+    },
+    "302": {
+        "type": "platform",
+        "description": "Left side platform (one-way)"
+    },
+    "303": {
+        "type": "platform",
+        "description": "Middle platform (one-way)"
+    },
+    "304": {
+        "type": "platform",
+        "description": "Middle platform (one-way)"
+    },
+    "305": {
+        "type": "platform",
+        "description": "Middle platform (one-way)"
+    },
+    "306": {
+        "type": "platform",
+        "description": "Right side platform (one-way)"
+    },
+    "308": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #2C341A)"
+    },
+    "310": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #2C341A)"
+    },
+    "323": {
+        "type": "decoration",
+        "description": "Decoration - inner canopy foliage or branch (avg #040404)"
+    },
+    "324": {
+        "type": "decoration",
+        "description": "Decoration - inner canopy foliage or branch (avg #040404)"
+    },
+    "332": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #2A3118)"
+    },
+    "334": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #2A3118)"
+    },
+    "337": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #4C3C10)"
+    },
+    "338": {
+        "type": "decoration",
+        "description": "Decoration - detailed object micro-fragment (avg #66531F)"
+    },
+    "339": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #0B0B0B)"
+    },
+    "340": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #12140E)"
+    },
+    "341": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #10110D)"
+    },
+    "347": {
+        "type": "decoration",
+        "description": "Decoration - inner canopy foliage or branch (avg #040404)"
+    },
+    "348": {
+        "type": "decoration",
+        "description": "Decoration - inner canopy foliage or branch (avg #040404)"
+    },
+    "350": {
+        "type": "decoration",
+        "description": "Decoration - glowing orange drip (stalactite piece) (avg #A27E2B)"
+    },
+    "351": {
+        "type": "decoration",
+        "description": "Decoration - glowing orange drip (stalactite piece) (avg #BF9020)"
+    },
+    "352": {
+        "type": "decoration",
+        "description": "Decoration - glowing orange drip (stalactite piece) (avg #AD872D)"
+    },
+    "353": {
+        "type": "decoration",
+        "description": "Decoration - glowing orange drip (stalactite piece) (avg #B28823)"
+    },
+    "354": {
+        "type": "platform",
+        "description": "Single platform (one-way)"
+    },
+    "356": {
+        "type": "decoration",
+        "description": "Decoration - sparse foliage cluster (avg #30381B)"
+    },
+    "358": {
+        "type": "decoration",
+        "description": "Decoration - sparse foliage cluster (avg #30381B)"
+    },
+    "361": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #15150C)"
+    },
+    "362": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #12110C)"
+    },
+    "363": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #0B0B0B)"
+    },
+    "364": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #0E0F0C)"
+    },
+    "365": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #0F110D)"
+    },
+    "366": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #0D0E0C)"
+    },
+    "367": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #13150E)"
+    },
+    "368": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #262D17)"
+    },
+    "371": {
+        "type": "decoration",
+        "description": "Decoration - inner canopy foliage or branch (avg #040404)"
+    },
+    "372": {
+        "type": "decoration",
+        "description": "Decoration - inner canopy foliage or branch (avg #040404)"
+    },
+    "374": {
+        "type": "decoration",
+        "description": "Decoration - glowing orange drip (stalactite piece) (avg #EFB324)"
+    },
+    "375": {
+        "type": "decoration",
+        "description": "Decoration - glowing orange drip (stalactite piece) (avg #E4AA1E)"
+    },
+    "377": {
+        "type": "decoration",
+        "description": "Decoration - glowing orange drip (stalactite piece) (avg #EDB01C)"
+    },
+    "385": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #0D0E0C)"
+    },
+    "386": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #12140E)"
+    },
+    "387": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #0B0B0B)"
+    },
+    "388": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #12130E)"
+    },
+    "389": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #0B0B0B)"
+    },
+    "390": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #10110D)"
+    },
+    "391": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #12140E)"
+    },
+    "392": {
+        "type": "solid",
+        "description": "Top left corner solid block"
+    },
+    "393": {
+        "type": "decoration",
+        "description": "Decoration - inner canopy foliage or branch (avg #0E0E0C)"
+    },
+    "394": {
+        "type": "decoration",
+        "description": "Decoration - inner canopy foliage or branch (avg #10110D)"
+    },
+    "395": {
+        "type": "decoration",
+        "description": "Decoration - inner canopy foliage or branch (avg #040404)"
+    },
+    "396": {
+        "type": "decoration",
+        "description": "Decoration - inner canopy foliage or branch (avg #040404)"
+    },
+    "399": {
+        "type": "decoration",
+        "description": "Decoration - glowing orange drip (stalactite piece) (avg #F0B62A)"
+    },
+    "417": {
+        "type": "decoration",
+        "description": "Decoration - lower trunk segment (avg #262D17)"
+    },
+    "418": {
+        "type": "decoration",
+        "description": "Decoration - lower trunk segment (avg #13150E)"
+    },
+    "422": {
+        "type": "decoration",
+        "description": "Decoration - glowing orange drip (stalactite piece) (avg #A05929)"
+    },
+    "423": {
+        "type": "decoration",
+        "description": "Decoration - glowing orange drip (stalactite piece) (avg #BD5E1E)"
+    },
+    "424": {
+        "type": "decoration",
+        "description": "Decoration - glowing orange drip (stalactite piece) (avg #AB5E2B)"
+    },
+    "425": {
+        "type": "decoration",
+        "description": "Decoration - glowing orange drip (stalactite piece) (avg #B05B21)"
+    },
+    "426": {
+        "type": "platform",
+        "description": "Single platform (one-way)"
+    },
+    "429": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #040404)"
+    },
+    "433": {
+        "type": "platform",
+        "description": "Single platform (one-way)"
+    },
+    "434": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #474032)"
+    },
+    "436": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #3E382B)"
+    },
+    "437": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #3E382C)"
+    },
+    "439": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #10110D)"
+    },
+    "440": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #0E0E0C)"
+    },
+    "441": {
+        "type": "solid",
+        "description": "Top left corner solid block"
+    },
+    "442": {
+        "type": "decoration",
+        "description": "Decoration - spreading root or base segment (avg #12140E)"
+    },
+    "446": {
+        "type": "decoration",
+        "description": "Decoration - glowing orange drip (stalactite piece) (avg #EE7420)"
+    },
+    "447": {
+        "type": "decoration",
+        "description": "Decoration - glowing orange drip (stalactite piece) (avg #E36C1B)"
+    },
+    "449": {
+        "type": "decoration",
+        "description": "Decoration - glowing orange drip (stalactite piece) (avg #EC6F19)"
+    },
+    "452": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #0B0B0B)"
+    },
+    "453": {
+        "type": "solid",
+        "description": "Top left corner solid block"
+    },
+    "458": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #403A2D)"
+    },
+    "460": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #3E382C)"
+    },
+    "461": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #3E382B)"
+    },
+    "471": {
+        "type": "decoration",
+        "description": "Decoration - glowing orange drip (stalactite piece) (avg #F07826)"
+    },
+    "475": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #070707)"
+    },
+    "476": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #11130B)"
+    },
+    "477": {
+        "type": "solid",
+        "description": "Left side solid block"
+    },
+    "478": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #060606)"
+    },
+    "479": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #070707)"
+    },
+    "481": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #474032)"
+    },
+    "482": {
+        "type": "platform",
+        "description": "Single platform (one-way)"
+    },
+    "487": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #3E382B)"
+    },
+    "488": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #3E382B)"
+    },
+    "489": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #3E382B)"
+    },
+    "490": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #3E382B)"
+    },
+    "494": {
+        "type": "decoration",
+        "description": "Decoration - glowing orange drip (stalactite piece) (avg #8C3C5E)"
+    },
+    "495": {
+        "type": "decoration",
+        "description": "Decoration - detailed object micro-fragment (avg #A33865)"
+    },
+    "496": {
+        "type": "decoration",
+        "description": "Decoration - glowing orange drip (stalactite piece) (avg #964064)"
+    },
+    "497": {
+        "type": "decoration",
+        "description": "Decoration - detailed object micro-fragment (avg #993861)"
+    },
+    "498": {
+        "type": "platform",
+        "description": "Single platform (one-way)"
+    },
+    "499": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #060606)"
+    },
+    "500": {
+        "type": "platform",
+        "description": "Single platform (one-way)"
+    },
+    "501": {
+        "type": "solid",
+        "description": "Left side solid block"
+    },
+    "502": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #060606)"
+    },
+    "503": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #040404)"
+    },
+    "505": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #403A2D)"
+    },
+    "507": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #403A2D)"
+    },
+    "510": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #403A2D)"
+    },
+    "518": {
+        "type": "decoration",
+        "description": "Decoration - glowing orange drip (stalactite piece) (avg #CD417B)"
+    },
+    "519": {
+        "type": "decoration",
+        "description": "Decoration - detailed object micro-fragment (avg #C33B73)"
+    },
+    "521": {
+        "type": "decoration",
+        "description": "Decoration - detailed object micro-fragment (avg #CA3B76)"
+    },
+    "524": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #1B1B1B)"
+    },
+    "525": {
+        "type": "solid",
+        "description": "Left side solid block"
+    },
+    "526": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #0B0B0B)"
+    },
+    "531": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #474032)"
+    },
+    "532": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #484233)"
+    },
+    "533": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #484233)"
+    },
+    "534": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #474032)"
+    },
+    "535": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #3E382B)"
+    },
+    "536": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #3E382B)"
+    },
+    "537": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #3E382B)"
+    },
+    "538": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #3E382B)"
+    },
+    "543": {
+        "type": "decoration",
+        "description": "Decoration - glowing orange drip (stalactite piece) (avg #CF467F)"
+    },
+    "548": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #191919)"
+    },
+    "549": {
+        "type": "solid",
+        "description": "Bottom left corner solid block"
+    },
+    "550": {
+        "type": "decoration",
+        "description": "Decoration - dark rock or shadow fragment (avg #0B0B0B)"
+    }
+}

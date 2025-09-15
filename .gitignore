@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-wheel-metadata/
+
+# Archive folder (excluded as requested)
+Archive/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build/packaging
+build/
+dist/
+*.spec
+
+# Test and debug files
+test_*.py
+debug_*.py
+
+# Log files
+*.log

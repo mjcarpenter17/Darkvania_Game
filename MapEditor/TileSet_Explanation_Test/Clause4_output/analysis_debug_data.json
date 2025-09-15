@@ -1,0 +1,26 @@
+{
+  "analysis_summary": {
+    "total_tiles_analyzed": 576,
+    "non_blank_tiles_found": 272,
+    "selected_threshold": 0.3,
+    "ultra_faint_threshold": 0.05,
+    "faint_tiles_added": 0,
+    "final_tile_count": 278
+  },
+  "type_distribution": {
+    "solid": 65,
+    "platform": 27,
+    "decoration": 180
+  },
+  "tree_analysis": {
+    "tree_cluster_size": 45,
+    "tree_bbox": [
+      8,
+      2,
+      18,
+      14
+    ],
+    "tree_dimensions": "13x11"
+  },
+  "decoration_clusters": 26
+}

@@ -1,0 +1,150 @@
+{
+    "0": {
+        "type": "solid",
+        "description": "example Grey block"
+    },
+    "3": {
+        "type": "solid",
+        "description": "left ceiling/ underneath / bottom block"
+    },
+    "4": {
+        "type": "solid",
+        "description": "Center ceiling/ underneath / bottom block"
+    },
+    "5": {
+        "type": "solid",
+        "description": "Right ceiling/ underneath / bottom block"
+    },
+    "7": {
+        "type": "solid",
+        "description": "left Floor/ top block"
+    },
+    "8": {
+        "type": "solid",
+        "description": "Center Floor/ top block"
+    },
+    "9": {
+        "type": "solid",
+        "description": "Right Floor/ top block"
+    },
+    "25": {
+        "type": "decoration",
+        "description": "Left Edge Grass (Grass going over a left edge, about to go down a left wall)"
+    },
+    "26": {
+        "type": "decoration",
+        "description": "Left Grass (Grass at the left end of a floor, either up against a left wall or leading to Tile 25, grass about to go over a left edge)"
+    },
+    "27": {
+        "type": "decoration",
+        "description": "Grass (Middle, can be repeated as many times a needed)"
+    },
+    "28": {
+        "type": "decoration",
+        "description": "Right Grass (Grass at the right end of a floor, either up against a right wall or leading to Tile 29, grass about to go over a right edge)"
+    },
+    "29": {
+        "type": "decoration",
+        "description": "Right Edge Grass (Grass going over a right edge, about to go down a right wall)"
+    },
+    "35": {
+        "type": "decoration",
+        "description": "Grass (Middle, can be repeated as many times a needed)"
+    },
+    "36": {
+        "type": "decoration",
+        "description": "Grass (Middle, can be repeated as many times a needed)"
+    },
+    "37": {
+        "type": "decoration",
+        "description": "Grass (Middle, can be repeated as many times a needed)"
+    },
+    "49": {
+        "type": "decoration",
+        "description": "Left Side Grass (Grass on a left wall, going down a left facing wall)"
+    },
+    "50": {
+        "type": "solid",
+        "description": "Top left corner solid block"
+    },
+    "51": {
+        "type": "solid",
+        "description": "Top edge solid block"
+    },
+    "52": {
+        "type": "solid",
+        "description": "Top right corner solid block"
+    },
+    "53": {
+        "type": "decoration",
+        "description": "Right Side Grass (Grass on a right wall, going down a right facing wall)"
+    },
+    "55": {
+        "type": "platform",
+        "description": "Left side platform (one-way)"
+    },
+    "57": {
+        "type": "platform",
+        "description": "Middle platform (one-way)"
+    },
+    "59": {
+        "type": "platform",
+        "description": "Right side platform (one-way)"
+    },
+    "73": {
+        "type": "decoration",
+        "description": "Left Side Grass (Grass on a left wall, going down a left facing wall)"
+    },
+    "74": {
+        "type": "solid",
+        "description": "Left side solid block"
+    },
+    "75": {
+        "type": "solid",
+        "description": "Middle black fill solid block"
+    },
+    "76": {
+        "type": "solid",
+        "description": "Right side solid block"
+    },
+    "77": {
+        "type": "decoration",
+        "description": "Right Side Grass (Grass on a right wall, going down a right facing wall)"
+    },
+    "97": {
+        "type": "decoration",
+        "description": "Left Side Grass (Grass on a left wall, going down a left facing wall)"
+    },
+    "98": {
+        "type": "solid",
+        "description": "Bottom left corner solid block"
+    },
+    "99": {
+        "type": "solid",
+        "description": "Bottom edge solid block"
+    },
+    "100": {
+        "type": "solid",
+        "description": "Bottom right corner solid block"
+    },
+    "101": {
+        "type": "decoration",
+        "description": "Right Side Grass (Grass on a right wall, going down a right facing wall)"
+    },
+    "146": {
+        "type": "solid",
+        "description": "top left corner (a corner peice the has a ceiling  to it's right side, and a right facing wall below it)"
+    },
+    "148": {
+        "type": "solid",
+        "description": "top right corner (a corner peice the has a ceiling to it's left side, and a left facing wall below it)"
+    },
+    "194": {
+        "type": "solid",
+        "description": "Bottom left corner (a corner peice that has a floor to it's right side, and a right facing wall above it)"
+    },
+    "196": {
+        "type": "solid",
+        "description": "Bottom right corner (a corner peice that has a floor to it's left side, and a left facing wall above it)"
+    }
+}

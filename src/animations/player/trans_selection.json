@@ -1,0 +1,103 @@
+{
+  "animation": "trans",
+  "sheet": "C:\\Users\\Michael\\Documents\\Test Games\\Walk_GhCp_Test\\Assests\\Sword Master Sprite Sheet 90x37.png",
+  "frame_size": [
+    90,
+    37
+  ],
+  "margin": 0,
+  "spacing": 0,
+  "rows": 27,
+  "cols": 10,
+  "order": "selection-order",
+  "frames": [
+    {
+      "x": 0,
+      "y": 518,
+      "w": 90,
+      "h": 37,
+      "row": 14,
+      "col": 0,
+      "trimmed": {
+        "x": 21,
+        "y": 527,
+        "w": 14,
+        "h": 22
+      },
+      "offset": {
+        "x": 21,
+        "y": 9
+      },
+      "pivot": {
+        "x": 7,
+        "y": 21
+      }
+    },
+    {
+      "x": 90,
+      "y": 518,
+      "w": 90,
+      "h": 37,
+      "row": 14,
+      "col": 1,
+      "trimmed": {
+        "x": 111,
+        "y": 527,
+        "w": 14,
+        "h": 22
+      },
+      "offset": {
+        "x": 21,
+        "y": 9
+      },
+      "pivot": {
+        "x": 7,
+        "y": 21
+      }
+    },
+    {
+      "x": 180,
+      "y": 518,
+      "w": 90,
+      "h": 37,
+      "row": 14,
+      "col": 2,
+      "trimmed": {
+        "x": 197,
+        "y": 527,
+        "w": 19,
+        "h": 21
+      },
+      "offset": {
+        "x": 17,
+        "y": 9
+      },
+      "pivot": {
+        "x": 9,
+        "y": 20
+      }
+    },
+    {
+      "x": 270,
+      "y": 518,
+      "w": 90,
+      "h": 37,
+      "row": 14,
+      "col": 3,
+      "trimmed": {
+        "x": 287,
+        "y": 527,
+        "w": 19,
+        "h": 21
+      },
+      "offset": {
+        "x": 17,
+        "y": 9
+      },
+      "pivot": {
+        "x": 9,
+        "y": 20
+      }
+    }
+  ]
+}

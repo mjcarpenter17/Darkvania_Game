@@ -1,0 +1,37 @@
+{
+  "animation": "staticIdle",
+  "sheet": "..\\..\\..\\Assests\\SwordMaster\\Sword Master Sprite Sheet.png",
+  "frame_size": [
+    90,
+    37
+  ],
+  "margin": 1,
+  "spacing": 2,
+  "rows": 27,
+  "cols": 10,
+  "order": "selection-order",
+  "frames": [
+    {
+      "x": 1,
+      "y": 1,
+      "w": 90,
+      "h": 37,
+      "row": 0,
+      "col": 0,
+      "trimmed": {
+        "x": 17,
+        "y": 11,
+        "w": 23,
+        "h": 24
+      },
+      "offset": {
+        "x": 16,
+        "y": 10
+      },
+      "pivot": {
+        "x": 11,
+        "y": 23
+      }
+    }
+  ]
+}
