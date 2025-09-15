@@ -72,7 +72,7 @@ class Player:
         self.gravity = 1400.0
         
         # Load Aseprite animations
-        aseprite_json_path = "Assests/SwordMaster/Sword Master Sprite Sheet3.json"
+        aseprite_json_path = "Assests/SwordMaster/SwordMaster.json"
         self.animation_loader = AsepriteAnimationLoader(aseprite_json_path, scale)
         self.animation_loader.load_all_animations()
         
