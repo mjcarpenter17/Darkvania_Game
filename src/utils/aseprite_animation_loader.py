@@ -37,6 +37,10 @@ class AsepriteAnimationLoader:
             self._load_animation('dash', 'Dash')
             self._load_animation('attack1', 'Slash 1')
             self._load_animation('attack2', 'Slash 2')
+            # Special animations for health system
+            self._load_animation('spawn', 'Appear Tele')
+            self._load_animation('hit', 'Hit')
+            self._load_animation('death', 'death')
         else:
             # Custom animation list (for enemies, etc.)
             for state_name, aseprite_name in animation_list.items():
@@ -120,7 +124,7 @@ class AsepriteAnimationLoader:
             
     def _ensure_all_animations_exist(self):
         """Ensure all required animations exist, using fallbacks if necessary."""
-        required_animations = ['idle', 'walk', 'jump', 'trans', 'fall']
+        required_animations = ['idle', 'walk', 'jump', 'trans', 'fall', 'spawn', 'hit', 'death']
         
         # Use walk as primary fallback, then idle
         primary_fallback = self.animations.get('walk') or self.animations.get('idle')
@@ -129,6 +133,8 @@ class AsepriteAnimationLoader:
             if anim_name not in self.animations and primary_fallback:
                 self.animations[anim_name] = primary_fallback
                 print(f"Using fallback for animation '{anim_name}'")
+            elif anim_name not in self.animations:
+                print(f"Warning: Animation '{anim_name}' not found and no fallback available")
                 
     def get_animation(self, name: str) -> Optional[Dict]:
         """Get animation data by name."""

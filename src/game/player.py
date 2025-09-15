@@ -84,12 +84,12 @@ class Player:
         self.is_spawning = True
         self.spawn_timer = 0.0
         self.is_invulnerable = True  # Invulnerable during spawn
-        self.state = "Appear Tele"
+        self.state = "spawn"
         self.current_frame = 0
         self.frame_timer = 0.0
         self.velocity_x = 0.0
         self.velocity_y = 0.0
-        print("Player spawning with Appear Tele animation")  # Debug output
+        print("Player spawning with spawn animation")  # Debug output
         
     def update(self, dt: float, input_state: dict, world_map=None):
         """Update player physics, animation, and collision."""
@@ -353,37 +353,60 @@ class Player:
         
     def _update_animation(self, dt: float):
         """Update animation state and frame."""
-        # Determine desired state
-        desired = self.state
-        in_air = not self.on_ground
-        trans_animation = self.animation_loader.get_animation('trans')
-        trans_available = trans_animation and len(trans_animation['surfaces_right']) > 0
+        # Handle special states that should not be overridden
+        special_states = ["spawn", "hit", "death"]
         
-        # Handle attack states (highest priority)
-        if self.is_attacking:
-            desired = f"attack{self.current_attack}"
-        # Handle dash state (second highest priority)
-        elif self.is_dashing:
-            desired = "dash"
-        elif in_air:
-            if self.velocity_y < -1e-2:
-                desired = "jump"
-            else:
-                if self.state == "trans" and trans_available:
-                    desired = "trans"  # stay in trans until it finishes
-                elif self.state == "jump" and trans_available:
-                    desired = "trans"
-                else:
-                    desired = "fall"
-        else:
-            desired = "walk" if abs(self.velocity_x) > 1e-2 else "idle"
+        # For spawning state
+        if self.is_spawning:
+            if self.state != "spawn":
+                self.state = "spawn"
+                self.current_frame = 0
+                self.frame_timer = 0.0
+        # For death state  
+        elif self.is_dead:
+            if self.state != "death":
+                self.state = "death"
+                self.current_frame = 0
+                self.frame_timer = 0.0
+        # For hit state (during invulnerability after taking damage)
+        elif self.is_invulnerable and not self.is_spawning and self.health > 0:
+            if self.state != "hit":
+                self.state = "hit"
+                self.current_frame = 0
+                self.frame_timer = 0.0
+        # Normal state logic (only if not in special states)
+        elif self.state not in special_states:
+            # Determine desired state
+            desired = self.state
+            in_air = not self.on_ground
+            trans_animation = self.animation_loader.get_animation('trans')
+            trans_available = trans_animation and len(trans_animation['surfaces_right']) > 0
             
-        # Change state if needed
-        if desired != self.state:
-            self.state = desired
-            self.current_frame = 0
-            self.frame_timer = 0.0
-            self.prev_state = self.state
+            # Handle attack states (highest priority)
+            if self.is_attacking:
+                desired = f"attack{self.current_attack}"
+            # Handle dash state (second highest priority)
+            elif self.is_dashing:
+                desired = "dash"
+            elif in_air:
+                if self.velocity_y < -1e-2:
+                    desired = "jump"
+                else:
+                    if self.state == "trans" and trans_available:
+                        desired = "trans"  # stay in trans until it finishes
+                    elif self.state == "jump" and trans_available:
+                        desired = "trans"
+                    else:
+                        desired = "fall"
+            else:
+                desired = "walk" if abs(self.velocity_x) > 1e-2 else "idle"
+                
+            # Change state if needed
+            if desired != self.state:
+                self.state = desired
+                self.current_frame = 0
+                self.frame_timer = 0.0
+                self.prev_state = self.state
             
         # Update animation frame using Aseprite durations
         self.frame_timer += dt
@@ -402,18 +425,52 @@ class Player:
                     # Handle animation direction (forward, reverse, pingpong)
                     direction = self.animation_loader.get_animation_direction(self.state)
                     if direction == "forward":
-                        # For attack and dash animations, don't loop - stay on last frame
-                        if self.state in ["attack1", "attack2", "dash"] and self.current_frame >= len(frames) - 1:
-                            self.current_frame = len(frames) - 1
+                        # For special animations that should complete once
+                        if self.state in ["attack1", "attack2", "dash", "spawn", "hit", "death"]:
+                            if self.current_frame >= len(frames) - 1:
+                                # Animation completed
+                                self.current_frame = len(frames) - 1
+                                
+                                # Handle special animation completions
+                                if self.state == "Appear Tele":
+                                    self.is_spawning = False
+                                    self.is_invulnerable = False  # End spawn invulnerability
+                                    print("Player spawn complete")  # Debug output
+                                elif self.state == "Hit":
+                                    # Hit animation complete, but invulnerability may continue
+                                    pass  # Let invulnerability timer handle state change
+                                elif self.state == "death":
+                                    # Death animation complete - stay in death state
+                                    pass
+                            else:
+                                self.current_frame += 1
                         else:
+                            # Looping animations
                             self.current_frame = (self.current_frame + 1) % len(frames)
                     elif direction == "reverse":
                         self.current_frame = (self.current_frame - 1) % len(frames)
                     else:  # pingpong or other directions - default to forward for now
-                        # For attack and dash animations, don't loop - stay on last frame
-                        if self.state in ["attack1", "attack2", "dash"] and self.current_frame >= len(frames) - 1:
-                            self.current_frame = len(frames) - 1
+                        # For special animations that should complete once
+                        if self.state in ["attack1", "attack2", "dash", "spawn", "hit", "death"]:
+                            if self.current_frame >= len(frames) - 1:
+                                # Animation completed
+                                self.current_frame = len(frames) - 1
+                                
+                                # Handle special animation completions
+                                if self.state == "Appear Tele":
+                                    self.is_spawning = False
+                                    self.is_invulnerable = False  # End spawn invulnerability
+                                    print("Player spawn complete")  # Debug output
+                                elif self.state == "Hit":
+                                    # Hit animation complete, but invulnerability may continue
+                                    pass  # Let invulnerability timer handle state change
+                                elif self.state == "death":
+                                    # Death animation complete - stay in death state
+                                    pass
+                            else:
+                                self.current_frame += 1
                         else:
+                            # Looping animations
                             self.current_frame = (self.current_frame + 1) % len(frames)
                 
     def draw(self, screen: pygame.Surface, camera_x: float = 0, camera_y: float = 0):
@@ -521,7 +578,7 @@ class Player:
         """Handle player taking non-fatal damage."""
         self.is_invulnerable = True
         self.invulnerability_timer = 0.0
-        self.state = "Hit"
+        self.state = "hit"
         self.current_frame = 0
         self.frame_timer = 0.0
         self.velocity_x *= 0.5  # Reduce velocity on hit
