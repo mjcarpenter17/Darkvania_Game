@@ -19,8 +19,20 @@ class Player:
         self.on_ground = True
         self.direction = 1  # 1=right, -1=left
         
+        # Double jump system
+        self.jump_count = 0  # Track number of jumps performed
+        self.max_jumps = 2   # Allow double jump
+        
+        # Ledge grab system
+        self.is_ledge_grabbing = False
+        self.ledge_grab_x = 0.0  # X position where ledge is grabbed
+        self.ledge_grab_y = 0.0  # Y position where ledge is grabbed
+        self.ledge_grab_direction = 1  # Direction of the ledge grab
+        self.ledge_grab_timer = 0.0
+        self.can_ledge_grab = True  # Prevent immediate re-grabbing after climb/drop
+        
         # Animation
-        self.state = "idle"  # idle, walk, jump, trans, fall, dash, attack1, attack2
+        self.state = "idle"  # idle, walk, jump, trans, fall, dash, attack1, attack2, ledge_grab
         self.prev_state = self.state
         self.current_frame = 0
         self.frame_timer = 0.0
@@ -89,6 +101,7 @@ class Player:
         self.frame_timer = 0.0
         self.velocity_x = 0.0
         self.velocity_y = 0.0
+        self.jump_count = 0  # Reset jump count on spawn
         print("Player spawning with spawn animation")  # Debug output
         
     def update(self, dt: float, input_state: dict, world_map=None):
@@ -104,9 +117,16 @@ class Player:
         elif self.is_dead:
             self._handle_death_input(input_state, dt)
         
-        # Apply physics (skip if dead)
-        if not self.is_dead:
+        # Apply physics (skip if dead or ledge grabbing)
+        if not self.is_dead and not self.is_ledge_grabbing:
             self._apply_physics(dt)
+        
+        # Check for ledge grab opportunity (before collision handling)
+        if world_map and not self.is_dead and not self.is_spawning and not self.is_ledge_grabbing:
+            if self._detect_ledge_grab(world_map, input_state):
+                # Determine grab direction based on movement
+                grab_direction = 1 if self.velocity_x > 0 else -1
+                self._start_ledge_grab(world_map, grab_direction)
         
         # Handle collisions if world map is provided (skip if dead or spawning)
         if world_map and not self.is_dead and not self.is_spawning:
@@ -120,6 +140,12 @@ class Player:
         
     def _handle_input(self, input_state: dict, dt: float):
         """Process player input."""
+        # Handle ledge grab input separately
+        if self.is_ledge_grabbing:
+            self._handle_ledge_grab_input(input_state, dt)
+            self.prev_input_state = input_state.copy()
+            return
+            
         left = input_state.get('left', False)
         right = input_state.get('right', False)
         jump = input_state.get('jump', False)
@@ -129,14 +155,20 @@ class Player:
         # Detect newly pressed keys (not held keys)
         prev_attack = self.prev_input_state.get('attack', False)
         prev_dash = self.prev_input_state.get('dash', False)
+        prev_jump = self.prev_input_state.get('jump', False)
         attack_just_pressed = attack and not prev_attack
         dash_just_pressed = dash and not prev_dash
+        jump_just_pressed = jump and not prev_jump
         
         # Update cooldowns and timers
         if self.dash_cooldown > 0:
             self.dash_cooldown -= dt
         if self.attack_cooldown > 0:
             self.attack_cooldown -= dt
+        if self.ledge_grab_timer > 0:
+            self.ledge_grab_timer -= dt
+            if self.ledge_grab_timer <= 0:
+                self.can_ledge_grab = True
         
         # Update combo window timer
         if self.combo_window_active:
@@ -203,9 +235,19 @@ class Player:
                 self.direction = 1
             
         # Jumping (can't jump while dashing or attacking)
-        if jump and self.on_ground and not self.is_dashing and not self.is_attacking:
-            self.velocity_y = -self.jump_speed
-            self.on_ground = False
+        # Allow jump if: on ground OR have jumps remaining (double jump)
+        if jump_just_pressed and not self.is_dashing and not self.is_attacking:
+            if self.on_ground and self.jump_count == 0:
+                # First jump from ground
+                self.velocity_y = -self.jump_speed
+                self.on_ground = False
+                self.jump_count = 1
+                print("First jump!")  # Debug output
+            elif not self.on_ground and self.jump_count < self.max_jumps:
+                # Double jump in air
+                self.velocity_y = -self.jump_speed
+                self.jump_count += 1
+                print(f"Double jump! ({self.jump_count}/{self.max_jumps})")  # Debug output
             
     def _start_attack(self, attack_number: int):
         """Start an attack (1 = Slash 1, 2 = Slash 2)."""
@@ -258,6 +300,192 @@ class Player:
         self.is_dashing = False
         self.dash_timer = 0.0
         self.dash_cooldown = self.dash_cooldown_duration
+        
+    def _detect_ledge_grab(self, world_map, input_state: dict) -> bool:
+        """
+        Detect if player should grab a ledge.
+        Returns True if ledge grab should activate.
+        """
+        # Only check for ledge grab if conditions are met
+        if not self.can_ledge_grab:
+            return False
+        if self.is_ledge_grabbing or self.on_ground:
+            return False
+        if self.is_dashing or self.is_attacking or self.is_spawning or self.is_dead:
+            return False
+        if self.velocity_y <= 0:  # Must be falling (not jumping up)
+            return False
+            
+        # Must have forward input to grab ledge (prevents accidental grabs)
+        left = input_state.get('left', False)
+        right = input_state.get('right', False)
+        
+        # Check if moving toward a ledge
+        check_direction = 0
+        if right and self.velocity_x > 0:
+            check_direction = 1
+        elif left and self.velocity_x < 0:
+            check_direction = -1
+        else:
+            return False  # Not moving forward
+        
+        # Define hand/chest level relative to player position
+        hand_y = self.pos_y - 25  # About chest height
+        hand_x = self.pos_x + (check_direction * 20)  # Reach ahead
+        
+        # Check for solid tile at hand level (the ledge)
+        if not world_map.is_solid_at_any_layer(hand_x, hand_y):
+            return False
+            
+        # Check that there's empty space above the ledge (clearance)
+        clearance_y = hand_y - 35  # Check space above ledge
+        if world_map.is_solid_at_any_layer(hand_x, clearance_y):
+            return False  # Not enough clearance
+            
+        # Check that player's current position has empty space (not inside wall)
+        if world_map.is_solid_at_any_layer(self.pos_x, self.pos_y - 15):
+            return False
+            
+        # All conditions met - can grab ledge
+        return True
+    
+    def _start_ledge_grab(self, world_map, direction: int):
+        """Start ledge grab state."""
+        self.is_ledge_grabbing = True
+        self.ledge_grab_direction = direction
+        
+        # Calculate precise ledge position
+        hand_y = self.pos_y - 25  # Chest level
+        hand_x = self.pos_x + (direction * 20)  # Reach ahead
+        
+        # Find the exact ledge position
+        tile_size = world_map.tile_size * world_map.scale
+        ledge_tile_x = int(hand_x // tile_size) * tile_size
+        ledge_tile_y = int(hand_y // tile_size) * tile_size
+        
+        # Position player relative to ledge
+        if direction == 1:  # Grabbing right ledge
+            self.ledge_grab_x = ledge_tile_x - 18  # Hang slightly left of tile
+        else:  # Grabbing left ledge
+            self.ledge_grab_x = ledge_tile_x + tile_size + 18  # Hang slightly right of tile
+            
+        self.ledge_grab_y = ledge_tile_y + 48  # Hang closer to ledge surface (was +25)
+        
+        # Snap to ledge position
+        self.pos_x = self.ledge_grab_x
+        self.pos_y = self.ledge_grab_y
+        
+        # Stop all velocity
+        self.velocity_x = 0.0
+        self.velocity_y = 0.0
+        
+        # Set animation state
+        self.state = "ledge_grab"
+        self.current_frame = 0
+        self.frame_timer = 0.0
+        self.direction = direction
+        
+        # Reset jump count (hanging counts as landing)
+        self.jump_count = 0
+        
+        print(f"Ledge grab started! Direction: {direction}")  # Debug output
+    
+    def _handle_ledge_grab_input(self, input_state: dict, dt: float):
+        """Handle input while in ledge grab state."""
+        jump = input_state.get('jump', False)
+        left = input_state.get('left', False)
+        right = input_state.get('right', False)
+        down = input_state.get('down', False)
+        
+        # Detect key presses
+        prev_jump = self.prev_input_state.get('jump', False)
+        prev_down = self.prev_input_state.get('down', False)
+        jump_just_pressed = jump and not prev_jump
+        down_just_pressed = down and not prev_down
+        
+        # Climb up with jump/up
+        if jump_just_pressed or (input_state.get('up', False) and not self.prev_input_state.get('up', False)):
+            self._climb_up_from_ledge()
+        # Drop down with down key
+        elif down_just_pressed:
+            self._drop_from_ledge()
+        # Jump off ledge in opposite direction
+        elif (left and self.ledge_grab_direction == 1) or (right and self.ledge_grab_direction == -1):
+            self._jump_off_ledge()
+    
+    def _climb_up_from_ledge(self):
+        """Climb up from ledge grab."""
+        # Move player on top of the ledge
+        self.pos_y = self.ledge_grab_y - 40  # Move up onto the platform
+        
+        # Player is now on ground after climbing
+        self.on_ground = True
+        self.velocity_x = 0.0
+        self.velocity_y = 0.0
+        
+        # End ledge grab (but don't let it override our ground state)
+        self.is_ledge_grabbing = False
+        
+        # Set proper idle state since we're on ground
+        self.state = "idle"
+        self.current_frame = 0
+        self.frame_timer = 0.0
+        
+        # Prevent immediate re-grab
+        self.can_ledge_grab = False
+        self.ledge_grab_timer = 0.5  # Cooldown before can grab again
+        
+        print("Climbed up from ledge!")  # Debug output
+    
+    def _drop_from_ledge(self):
+        """Drop down from ledge grab."""
+        # Give slight downward velocity to ensure drop
+        self.velocity_y = 50.0
+        
+        # End ledge grab
+        self._end_ledge_grab()
+        
+        # Allow immediate grab again (might want to grab lower ledge)
+        self.can_ledge_grab = True
+        
+        print("Dropped from ledge!")  # Debug output
+    
+    def _jump_off_ledge(self):
+        """Jump off ledge in opposite direction."""
+        # Jump velocity
+        self.velocity_y = -self.jump_speed * 0.8  # Slightly weaker than normal jump
+        self.velocity_x = -self.ledge_grab_direction * self.move_speed * 1.2  # Push away from wall
+        
+        # Set jump count to 1 (used first jump)
+        self.jump_count = 1
+        
+        # End ledge grab
+        self._end_ledge_grab()
+        
+        # Prevent immediate re-grab
+        self.can_ledge_grab = False
+        self.ledge_grab_timer = 0.3  # Short cooldown
+        
+        print("Jumped off ledge!")  # Debug output
+    
+    def _end_ledge_grab(self):
+        """End ledge grab state."""
+        self.is_ledge_grabbing = False
+        self.on_ground = False  # In air after ledge grab
+        
+        # Force transition to appropriate movement state
+        if self.velocity_y > 0:
+            self.state = "fall"
+        elif self.velocity_y < 0:
+            self.state = "jump"
+        else:
+            self.state = "idle"
+            
+        # Reset animation frame
+        self.current_frame = 0
+        self.frame_timer = 0.0
+        
+        print("Ledge grab ended")  # Debug output
             
     def _apply_physics(self, dt: float):
         """Apply gravity and basic physics."""
@@ -265,6 +493,10 @@ class Player:
         
     def _handle_collisions(self, world_map, dt: float):
         """Handle collision detection and response with the world."""
+        # Skip collision handling if ledge grabbing (position is locked)
+        if self.is_ledge_grabbing:
+            return
+            
         # Horizontal movement with collision
         new_x = self.pos_x + self.velocity_x * dt
         
@@ -297,6 +529,7 @@ class Player:
                 self.pos_y = float(tile_y - 2)  # Stand on top of the tile
                 self.velocity_y = 0.0
                 self.on_ground = True
+                self.jump_count = 0  # Reset jump count when landing
             # Check for platform tiles (only stop if falling onto them from above)
             elif world_map.is_platform_at_any_layer(self.pos_x, foot_y):
                 # Only land on platform if we're falling from above
@@ -308,6 +541,7 @@ class Player:
                     self.pos_y = float(tile_y - 2)  # Stand on top of the platform
                     self.velocity_y = 0.0
                     self.on_ground = True
+                    self.jump_count = 0  # Reset jump count when landing
                 else:
                     # We're inside or below the platform, pass through
                     self.pos_y = new_y
@@ -345,6 +579,7 @@ class Player:
             self.pos_y = ground_y
             self.velocity_y = 0.0
             self.on_ground = True
+            self.jump_count = 0  # Reset jump count when landing
         else:
             self.on_ground = False
             
@@ -354,7 +589,7 @@ class Player:
     def _update_animation(self, dt: float):
         """Update animation state and frame."""
         # Handle special states that should not be overridden
-        special_states = ["spawn", "hit", "death"]
+        special_states = ["spawn", "hit", "death", "ledge_grab"]
         
         # For spawning state
         if self.is_spawning:
@@ -366,6 +601,12 @@ class Player:
         elif self.is_dead:
             if self.state != "death":
                 self.state = "death"
+                self.current_frame = 0
+                self.frame_timer = 0.0
+        # For ledge grab state
+        elif self.is_ledge_grabbing:
+            if self.state != "ledge_grab":
+                self.state = "ledge_grab"
                 self.current_frame = 0
                 self.frame_timer = 0.0
         # For hit state (during invulnerability after taking damage)

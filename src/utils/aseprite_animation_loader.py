@@ -41,6 +41,8 @@ class AsepriteAnimationLoader:
             self._load_animation('spawn', 'Appear Tele')
             self._load_animation('hit', 'Hit')
             self._load_animation('death', 'death')
+            # Movement abilities
+            self._load_animation('ledge_grab', 'Ledge Grab')
         else:
             # Custom animation list (for enemies, etc.)
             for state_name, aseprite_name in animation_list.items():

@@ -221,6 +221,8 @@ class Game:
         return {
             'left': keys[pygame.K_LEFT] or keys[pygame.K_a],
             'right': keys[pygame.K_RIGHT] or keys[pygame.K_d],
+            'up': keys[pygame.K_UP] or keys[pygame.K_w],
+            'down': keys[pygame.K_DOWN] or keys[pygame.K_s],
             'jump': keys[pygame.K_SPACE] or keys[pygame.K_w],
             'dash': keys[pygame.K_q],
             'attack': keys[pygame.K_f]

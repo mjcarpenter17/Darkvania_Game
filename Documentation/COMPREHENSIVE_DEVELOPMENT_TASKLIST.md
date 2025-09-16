@@ -1,0 +1,391 @@
+# 🎮 Darkvania Game - Comprehensive Development Task List
+
+**Project**: Darkvania Game (2D MetroidVania Action Platformer)  
+**Current Status**: Production-Ready Core Systems Complete  
+**Date Created**: September 15, 2025  
+**Last Updated**: September 15, 2025
+
+---
+
+## 📋 Executive Summary
+
+This document provides a comprehensive roadmap for the continued development of Darkvania Game. The project has reached a mature state with complete player systems, enemy AI, health mechanics, and professional animation framework. The following phases will transform the game from a solid foundation into a full-featured MetroidVania experience.
+
+### 🏆 Current Achievements
+- ✅ Complete Player System (movement, combat, health, respawn)
+- ✅ Advanced Enemy AI (Assassin with 4-phase behavior)
+- ✅ Professional Animation Framework (39+ animations, 216 frames)
+- ✅ Robust World Engine (collision, physics, camera)
+- ✅ Production-Quality Architecture (modular, documented, tested)
+
+---
+
+## 🚀 Development Phases
+
+### **Phase 1: Enhanced Movement System** 🏃‍♂️
+*Priority: HIGH | Estimated Time: 2-3 weeks*
+
+**Goal**: Expand player traversal capabilities with advanced movement mechanics using existing animations.
+
+#### Core Features
+- [ ] **Double Jump System**
+  - **Description**: Add second jump ability when player is airborne
+  - **Implementation**: Track jump count, reset on landing, modify `_handle_input()` in `player.py`
+  - **Animation**: Use existing jump animation for second jump
+  - **Controls**: Space key (same as regular jump)
+  - **Mechanics**: Only allow when `jump_count < 2` and not on ground
+
+- [ ] **Ledge Grab System**
+  - **Description**: Allow player to grab and hang from ledge edges
+  - **Implementation**: Detect ledge edges in collision system, add grab state
+  - **Animation**: "Ledge Grab" (5 frames available)
+  - **Controls**: Automatic when falling near ledge edge
+  - **Mechanics**: Can climb up (W/Space) or drop down (S)
+
+- [ ] **Wall Hold Mechanics**
+  - **Description**: Enable wall clinging when airborne against walls
+  - **Implementation**: Add wall proximity detection, wall hold state
+  - **Animation**: "Wall hold" (1 frame static hold)
+  - **Controls**: Hold Shift while against wall (no ground beneath)
+  - **Mechanics**: Slowly slide down if no input, can jump off wall
+
+- [ ] **Wall Slide System**
+  - **Description**: Controlled sliding down walls from wall hold
+  - **Implementation**: Transition system: Hold → Transition → Slide → Stop
+  - **Animations**: "Wall Transition" → "Wall Slide" → "Wall slide Stop"
+  - **Controls**: Press S/Down while in wall hold to initiate slide
+  - **Mechanics**: Can stop slide by releasing S, can jump off during slide
+
+#### Technical Requirements
+- Add wall detection raycasting
+- Implement ledge edge detection algorithm
+- Add new player states: `wall_hold`, `wall_slide`, `ledge_grab`
+- Modify collision system for wall/ledge detection
+- Add jump count tracking and management
+
+#### Files to Modify
+- `src/game/player.py`: Core movement logic and state management
+- `src/engine/world.py`: Wall/ledge detection methods
+- `src/utils/aseprite_animation_loader.py`: Animation mapping updates
+
+---
+
+### **Phase 2: Advanced Combat Abilities** ⚔️
+*Priority: HIGH | Estimated Time: 2-3 weeks*
+
+**Goal**: Enhance combat depth with new offensive and defensive abilities.
+
+#### Core Features
+- [ ] **Player Roll System**
+  - **Description**: Evasive roll with invincibility frames
+  - **Implementation**: Add roll state with i-frames, movement burst
+  - **Animation**: "Roll" (8 frames available)
+  - **Controls**: Shift + movement direction (or dedicated key)
+  - **Mechanics**: 0.8s duration, invulnerable during roll, slight distance travel
+
+- [ ] **Downward Attack (Aerial)**
+  - **Description**: Downward striking attack while falling
+  - **Implementation**: Add aerial attack state with downward hitbox
+  - **Animation**: "Fall Attack" (9 frames available)
+  - **Controls**: S + F while falling/airborne
+  - **Mechanics**: Spike damage, faster fall speed during attack
+
+- [ ] **Slam Attack (Charged)**
+  - **Description**: Powerful charged attack with area damage
+  - **Implementation**: Charge system with hold timer and release detection
+  - **Animation**: "Slam" (6+ frames available)
+  - **Controls**: Hold F for >1 second, release to execute
+  - **Mechanics**: Increased damage, small AoE, ground impact effect
+
+#### Technical Requirements
+- Add invincibility frame system for roll
+- Implement charge attack input detection
+- Create aerial attack hitboxes
+- Add area-of-effect damage system
+- Design visual feedback for charging attacks
+
+#### Files to Modify
+- `src/game/player.py`: Combat system expansion
+- `src/game/game.py`: Attack collision detection updates
+- Combat balance and timing adjustments
+
+---
+
+### **Phase 3: World Interactables** 🗝️
+*Priority: MEDIUM | Estimated Time: 2-3 weeks*
+
+**Goal**: Add interactive objects to create engaging exploration and progression.
+
+#### Core Features
+- [ ] **Interactable Object System**
+  - **Description**: Base framework for all interactive world objects
+  - **Implementation**: Create base `Interactable` class with common functionality
+  - **Features**: Collision detection, interaction prompts, state management
+  - **Controls**: E key for interaction
+  - **Mechanics**: Proximity detection, visual feedback, state persistence
+
+- [ ] **Chest System**
+  - **Description**: Collectible containers with rewards
+  - **Implementation**: Inherit from Interactable, add open/close states
+  - **Features**: Open/close animations, item rewards, visual feedback
+  - **Controls**: E key to open when in proximity
+  - **Mechanics**: One-time use, save state, item drop or UI reward
+
+- [ ] **Door System**
+  - **Description**: Level transition and gating mechanisms
+  - **Implementation**: Locked/unlocked states, key requirements
+  - **Features**: Open/close animations, lock indicators, transition triggers
+  - **Controls**: E key to interact, automatic opening if unlocked
+  - **Mechanics**: Key requirements, level transitions, persistent state
+
+#### Technical Requirements
+- Design interactable object framework
+- Add interaction prompt UI system
+- Implement item/reward system
+- Create door transition system
+- Add object placement in map editor
+
+#### Files to Create/Modify
+- `src/game/interactables.py`: New file for interactable objects
+- `src/game/game.py`: Integration with game loop
+- `src/ui/`: Interaction prompt UI components
+- Map editor updates for object placement
+
+---
+
+### **Phase 4: Enemy Variety Expansion** 👹
+*Priority: MEDIUM | Estimated Time: 3-4 weeks*
+
+**Goal**: Diversify combat encounters with new enemy types and behaviors.
+
+#### Core Features
+- [ ] **Archer Enemy**
+  - **Description**: Ranged enemy with projectile attacks
+  - **Implementation**: Line-of-sight detection, projectile system
+  - **Assets**: `Assets/enemies/archer/Archer.json` and `Archer.png`
+  - **Behavior**: Stand and shoot, retreat when player approaches
+  - **Mechanics**: Arrow projectiles, reload timing, limited range
+
+- [ ] **Wasp Enemy**
+  - **Description**: Flying enemy with aerial movement patterns
+  - **Implementation**: 3D movement, swooping attack patterns
+  - **Assets**: `Assets/enemies/wasp/Wasp.json` and `Wasp.png`
+  - **Behavior**: Hovering, dive attacks, vertical navigation
+  - **Mechanics**: Ignores ground collision, aerial pursuit patterns
+
+#### Technical Requirements
+- Create projectile system for Archer
+- Implement 3D movement for flying enemies
+- Design enemy-specific AI behaviors
+- Add new enemy spawning in map editor
+- Balance enemy health and damage values
+
+#### Files to Create/Modify
+- `src/game/enemy.py`: New enemy classes
+- `src/game/projectiles.py`: New file for projectile system
+- `src/game/game.py`: Enemy management updates
+- Map editor enemy placement updates
+
+---
+
+### **Phase 5: UI/UX Polish & Quality of Life** ✨
+*Priority: MEDIUM | Estimated Time: 3-4 weeks*
+
+**Goal**: Enhance player experience with improved feedback and interface.
+
+#### Core Features
+- [ ] **Sound Effects System**
+  - **Description**: Audio feedback for all player and game actions
+  - **Implementation**: Audio manager, sound categories, volume control
+  - **Features**: Footsteps, combat sounds, enemy audio, environmental sounds
+  - **Technology**: pygame.mixer integration
+  - **Mechanics**: 3D audio positioning, volume curves, sound pooling
+
+- [ ] **Enhanced HUD Interface**
+  - **Description**: Improved visual information and interaction feedback
+  - **Implementation**: Modular UI components, better styling
+  - **Features**: Ability icons, interaction prompts, improved health display
+  - **Optional**: Stamina bar, mini-map, objective tracker
+  - **Mechanics**: Animated elements, context-sensitive information
+
+- [ ] **Visual Polish Effects**
+  - **Description**: Particle effects and visual feedback systems
+  - **Implementation**: Particle system, screen effects, damage indicators
+  - **Features**: Combat hit sparks, dust clouds, screen shake, damage numbers
+  - **Technology**: Custom particle engine or pygame effects
+  - **Mechanics**: Performance-optimized effects, configurable intensity
+
+#### Technical Requirements
+- Implement audio management system
+- Create particle effect framework
+- Design screen shake and camera effects
+- Add damage number system
+- Optimize rendering performance
+
+#### Files to Create/Modify
+- `src/audio/`: New audio management system
+- `src/effects/`: New particle and visual effects
+- `src/ui/`: Enhanced UI components
+- Performance optimization across all systems
+
+---
+
+### **Phase 6: Game Flow & Progression** 🎮
+*Priority: LOW | Estimated Time: 4-5 weeks*
+
+**Goal**: Create complete game experience with progression and persistence.
+
+#### Core Features
+- [ ] **Save/Load System**
+  - **Description**: Game state persistence between sessions
+  - **Implementation**: JSON-based save files, progress tracking
+  - **Features**: Player progress, level completion, settings persistence
+  - **Mechanics**: Auto-save, manual save points, multiple save slots
+
+- [ ] **Player Progression System**
+  - **Description**: Character growth and ability unlocks
+  - **Implementation**: Ability tree, stat increases, equipment system
+  - **Features**: Health upgrades, damage increases, new abilities
+  - **Mechanics**: Experience points, collectible upgrades, permanent progression
+
+- [ ] **Level Progression Flow**
+  - **Description**: Interconnected world with gated progression
+  - **Implementation**: Hub world or level selection, unlock system
+  - **Features**: Level gates, area unlocks, progression requirements
+  - **Mechanics**: Key-based unlocks, ability-gated areas, branching paths
+
+#### Technical Requirements
+- Design save/load file format
+- Implement progression tracking
+- Create hub world or level selection
+- Add ability unlock system
+- Design progression gating mechanics
+
+#### Files to Create/Modify
+- `src/game/progression.py`: New progression system
+- `src/game/save_system.py`: New save/load functionality
+- `src/ui/`: Progression and save/load UI
+- World design and level interconnection
+
+---
+
+## 🔧 Advanced Tasks & Future Enhancements
+
+### **Immediate Quality of Life Improvements**
+*These can be implemented alongside other phases*
+
+- [ ] **Input Buffering System**
+  - **Description**: Allow attack inputs to queue slightly before landing
+  - **Implementation**: Input buffer with timing windows
+  - **Benefit**: More responsive combat feel
+  - **Priority**: HIGH
+
+- [ ] **Coyote Time Mechanics**
+  - **Description**: Brief ground-check grace period after leaving platforms
+  - **Implementation**: Delayed ground state transition
+  - **Benefit**: More forgiving platforming
+  - **Priority**: HIGH
+
+- [ ] **Animation Canceling System**
+  - **Description**: Allow certain animations to interrupt others
+  - **Implementation**: Animation priority system with cancel windows
+  - **Benefit**: Smoother combat flow
+  - **Priority**: MEDIUM
+
+- [ ] **Attack Direction Control**
+  - **Description**: Aim attacks with movement keys
+  - **Implementation**: Directional input during attack frames
+  - **Benefit**: More precise combat control
+  - **Priority**: MEDIUM
+
+### **Advanced Features to Consider**
+*Long-term expansion opportunities*
+
+- [ ] **Environmental Hazards**
+  - Spikes, lava, moving platforms, crushing walls
+  - Dynamic environment interactions
+  - Puzzle-based environmental challenges
+
+- [ ] **Boss Encounter System**
+  - Multi-phase boss fights with unique mechanics
+  - Special boss AI patterns and abilities
+  - Cinematic boss introduction and defeat sequences
+
+- [ ] **Power-ups & Items System**
+  - Temporary or permanent ability enhancements
+  - Collectible items with various effects
+  - Equipment system with stat modifications
+
+- [ ] **Dialogue & Story System**
+  - NPC interaction framework
+  - Story delivery through dialogue trees
+  - Quest system and objective tracking
+
+- [ ] **Weather & Lighting Effects**
+  - Dynamic environmental effects
+  - Day/night cycles affecting gameplay
+  - Weather-based mechanics and visual atmosphere
+
+### **Technical Improvements**
+*Code quality and performance enhancements*
+
+- [ ] **Performance Profiling System**
+  - Frame rate monitoring with more enemies
+  - Memory usage optimization
+  - Rendering performance analysis
+
+- [ ] **Animation Blending Framework**
+  - Smooth transitions between animation states
+  - Procedural animation mixing
+  - Advanced state machine improvements
+
+- [ ] **Modular Enemy System**
+  - Template-based enemy creation
+  - Component-based enemy behaviors
+  - Rapid prototyping framework for new enemies
+
+- [ ] **Level Streaming System**
+  - Efficient loading of large worlds
+  - Background asset streaming
+  - Memory management for large levels
+
+---
+
+## 📊 Implementation Guidelines
+
+### **Phase Priority Recommendations**
+1. **Phase 1** (Movement): Immediately enhances core gameplay
+2. **Phase 2** (Combat): Builds on movement for complete player kit
+3. **Quality of Life**: Implement alongside Phases 1-2
+4. **Phase 3** (Interactables): Adds exploration depth
+5. **Phase 4** (Enemies): Increases challenge variety
+6. **Phase 5** (Polish): Professional presentation
+7. **Phase 6** (Progression): Complete game experience
+
+### **Development Best Practices**
+- **Incremental Implementation**: Complete one feature fully before starting next
+- **Testing**: Test each feature thoroughly with existing systems
+- **Documentation**: Update documentation as features are implemented
+- **Performance**: Profile performance impact of new features
+- **Backup**: Commit working versions before major changes
+
+### **Success Metrics**
+- **Functionality**: Feature works as designed without bugs
+- **Integration**: Seamlessly integrates with existing systems
+- **Performance**: No significant impact on frame rate
+- **User Experience**: Enhances gameplay feel and engagement
+- **Code Quality**: Maintains architectural standards and documentation
+
+---
+
+## 🎯 Next Steps
+
+1. **Review and Prioritize**: Select which phase to implement first
+2. **Technical Planning**: Detail implementation approach for chosen phase
+3. **Asset Preparation**: Ensure all required animations and assets are available
+4. **Testing Strategy**: Plan testing approach for new features
+5. **Implementation**: Begin development with regular progress check-ins
+
+---
+
+*This document serves as the comprehensive development roadmap for Darkvania Game. Update progress and add new features as development continues. For technical implementation details, refer to individual feature documentation in the `Documentation/` directory.*
