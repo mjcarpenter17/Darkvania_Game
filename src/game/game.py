@@ -225,7 +225,8 @@ class Game:
             'down': keys[pygame.K_DOWN] or keys[pygame.K_s],
             'jump': keys[pygame.K_SPACE] or keys[pygame.K_w],
             'dash': keys[pygame.K_q],
-            'attack': keys[pygame.K_f]
+            'attack': keys[pygame.K_f],
+            'roll': keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]
         }
     
     def _update_game(self, dt: float, input_state: dict):

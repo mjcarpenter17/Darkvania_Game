@@ -43,6 +43,13 @@ class AsepriteAnimationLoader:
             self._load_animation('death', 'death')
             # Movement abilities
             self._load_animation('ledge_grab', 'Ledge Grab')
+            # Wall mechanics
+            self._load_animation('wall_hold', 'Wall hold')
+            self._load_animation('wall_transition', 'Wall Transition')
+            self._load_animation('wall_slide', 'Wall Slide')
+            self._load_animation('wall_slide_stop', 'Wall slide Stop')
+            # Combat abilities
+            self._load_animation('roll', 'Roll')
         else:
             # Custom animation list (for enemies, etc.)
             for state_name, aseprite_name in animation_list.items():

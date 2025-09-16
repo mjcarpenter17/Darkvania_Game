@@ -31,8 +31,33 @@ class Player:
         self.ledge_grab_timer = 0.0
         self.can_ledge_grab = True  # Prevent immediate re-grabbing after climb/drop
         
+        # Wall hold system
+        self.is_wall_holding = False
+        self.wall_side = 0  # -1 for left wall, 1 for right wall, 0 for no wall
+        self.wall_hold_timer = 0.0
+        self.wall_hold_grace_time = 0.1  # Brief moment before sliding starts
+        self.wall_slide_speed = 100.0  # Slower than gravity
+        self.wall_slide_max_speed = 200.0  # Terminal velocity while sliding
+        self.wall_jump_speed_x = 250.0  # Horizontal push away from wall
+        self.wall_jump_speed_y = 600.0  # Slightly less than normal jump
+        self.wall_jump_duration = 0.3  # Brief period of forced movement
+        self.wall_jump_timer = 0.0  # Timer for wall jump forced movement
+        self.can_wall_grab = True  # Prevent immediate re-grabbing same wall
+        self.wall_grab_cooldown = 0.0  # Cooldown before grabbing same wall again
+        self.wall_grab_cooldown_duration = 0.2  # Delay before re-grabbing
+        
+        # Roll system
+        self.is_rolling = False
+        self.roll_timer = 0.0
+        self.roll_duration = 0.6  # seconds (matches animation length)
+        self.roll_speed = 200.0
+        self.roll_cooldown = 0.0
+        self.roll_cooldown_duration = 1.0
+        self.roll_invulnerability_duration = 0.6
+        self.roll_direction = 1  # Direction captured at roll start
+        
         # Animation
-        self.state = "idle"  # idle, walk, jump, trans, fall, dash, attack1, attack2, ledge_grab
+        self.state = "idle"  # idle, walk, jump, trans, fall, dash, attack1, attack2, ledge_grab, wall_hold, wall_transition, wall_slide, wall_slide_stop, roll
         self.prev_state = self.state
         self.current_frame = 0
         self.frame_timer = 0.0
@@ -102,13 +127,12 @@ class Player:
         self.velocity_x = 0.0
         self.velocity_y = 0.0
         self.jump_count = 0  # Reset jump count on spawn
-        print("Player spawning with spawn animation")  # Debug output
         
     def update(self, dt: float, input_state: dict, world_map=None):
         """Update player physics, animation, and collision."""
         # Update health and combat timers
         self._update_health_timers(dt)
-        
+
         # Handle input (skip if dead or spawning)
         if not self.is_dead and not self.is_spawning:
             self._handle_input(input_state, dt)
@@ -116,25 +140,42 @@ class Player:
             self._handle_spawn_input(input_state, dt)
         elif self.is_dead:
             self._handle_death_input(input_state, dt)
-        
-        # Apply physics (skip if dead or ledge grabbing)
-        if not self.is_dead and not self.is_ledge_grabbing:
+
+        # Apply physics (skip if dead, ledge grabbing, or wall holding)
+        if not self.is_dead and not self.is_ledge_grabbing and not self.is_wall_holding:
             self._apply_physics(dt)
-        
+        elif self.is_wall_holding:
+            # Special physics for wall sliding
+            self._update_wall_slide(dt)
+
         # Check for ledge grab opportunity (before collision handling)
-        if world_map and not self.is_dead and not self.is_spawning and not self.is_ledge_grabbing:
+        if world_map and not self.is_dead and not self.is_spawning and not self.is_ledge_grabbing and not self.is_wall_holding and not self.is_rolling:
             if self._detect_ledge_grab(world_map, input_state):
                 # Determine grab direction based on movement
                 grab_direction = 1 if self.velocity_x > 0 else -1
                 self._start_ledge_grab(world_map, grab_direction)
-        
+
+        # Check for wall hold opportunity (after ledge grab check)
+        if world_map and not self.is_dead and not self.is_spawning and not self.is_ledge_grabbing and not self.is_wall_holding and not self.on_ground and not self.is_rolling:
+            wall_side = self._detect_wall_grab(world_map, input_state)
+            if wall_side != 0:
+                self._start_wall_hold(wall_side)
+
         # Handle collisions if world map is provided (skip if dead or spawning)
         if world_map and not self.is_dead and not self.is_spawning:
             self._handle_collisions(world_map, dt)
         elif not self.is_dead:
             # Fallback collision (ground level)
             self._handle_basic_collision()
-        
+
+        # Always update roll timer and end logic, even if rolling disables other logic
+        if self.is_rolling:
+            self.roll_timer += dt
+            if self.roll_timer >= self.roll_duration:
+                self._end_roll()
+            elif self.roll_timer >= (self.roll_duration + 0.2):
+                self._end_roll()
+
         # Update animation
         self._update_animation(dt)
         
@@ -146,29 +187,52 @@ class Player:
             self.prev_input_state = input_state.copy()
             return
             
+        # Handle wall hold input separately
+        if self.is_wall_holding:
+            self._handle_wall_hold_input(input_state, dt)
+            self.prev_input_state = input_state.copy()
+            return
+            
+        # Handle roll input separately
+        if self.is_rolling:
+            self._handle_roll_input(input_state, dt)
+            self.prev_input_state = input_state.copy()
+            return
+            
         left = input_state.get('left', False)
         right = input_state.get('right', False)
         jump = input_state.get('jump', False)
         dash = input_state.get('dash', False)
         attack = input_state.get('attack', False)
+        roll = input_state.get('roll', False)
         
         # Detect newly pressed keys (not held keys)
         prev_attack = self.prev_input_state.get('attack', False)
         prev_dash = self.prev_input_state.get('dash', False)
         prev_jump = self.prev_input_state.get('jump', False)
+        prev_roll = self.prev_input_state.get('roll', False)
         attack_just_pressed = attack and not prev_attack
         dash_just_pressed = dash and not prev_dash
         jump_just_pressed = jump and not prev_jump
+        roll_just_pressed = roll and not prev_roll
         
         # Update cooldowns and timers
         if self.dash_cooldown > 0:
             self.dash_cooldown -= dt
         if self.attack_cooldown > 0:
             self.attack_cooldown -= dt
+        if self.roll_cooldown > 0:
+            self.roll_cooldown -= dt
         if self.ledge_grab_timer > 0:
             self.ledge_grab_timer -= dt
             if self.ledge_grab_timer <= 0:
                 self.can_ledge_grab = True
+        if self.wall_grab_cooldown > 0:
+            self.wall_grab_cooldown -= dt
+            if self.wall_grab_cooldown <= 0:
+                self.can_wall_grab = True
+        if self.wall_jump_timer > 0:
+            self.wall_jump_timer -= dt
         
         # Update combo window timer
         if self.combo_window_active:
@@ -192,6 +256,17 @@ class Player:
         if dash_just_pressed and not self.is_dashing and not self.is_attacking and self.dash_cooldown <= 0:
             self._start_dash()
         
+        # Handle roll input (cannot roll during attacks, dash, wall/ledge states, or while already rolling)
+        if roll_just_pressed and not self.is_rolling and not self.is_attacking and not self.is_dashing and not self.is_wall_holding and not self.is_ledge_grabbing and self.roll_cooldown <= 0:
+            # Determine roll direction (prefer current input, fallback to facing direction)
+            if left and not right:
+                self.roll_direction = -1
+            elif right and not left:
+                self.roll_direction = 1
+            else:
+                self.roll_direction = self.direction
+            self._start_roll(self.roll_direction)
+        
         # Update previous input state for next frame BEFORE processing attacks
         self.prev_input_state = input_state.copy()
         
@@ -210,22 +285,31 @@ class Player:
             if self.dash_timer >= self.dash_duration:
                 self._end_dash()
         
-        # Horizontal movement (modified for dash and attack)
-        if self.is_dashing:
+        # Update roll state (time based, like dash)
+        if self.is_rolling:
+            self.roll_timer += dt
+            if self.roll_timer >= self.roll_duration:
+                self._end_roll()
+            # Fail-safe: force end if somehow exceeded duration + small buffer
+            elif self.roll_timer >= (self.roll_duration + 0.2):
+                self._end_roll()
+        
+        # Horizontal movement (modified for dash, roll, and attack)
+        if self.is_rolling:
+            # Maintain constant speed in captured roll direction
+            self.velocity_x = self.roll_direction * self.roll_speed
+            self.direction = self.roll_direction  # Lock facing during roll
+        elif self.is_dashing:
             # During dash, maintain dash speed in current direction
             self.velocity_x = self.direction * self.dash_speed
         elif self.is_attacking:
-            # During attack, reduce movement speed significantly
-            attack_speed_modifier = 0.1 if self.current_attack == 2 else 0.2  # Even slower during second attack
+            attack_speed_modifier = 0.1 if self.current_attack == 2 else 0.2
             self.velocity_x = 0.0
             if left and not right:
                 self.velocity_x = -self.move_speed * attack_speed_modifier
-                # Don't change direction during attack
             elif right and not left:
                 self.velocity_x = self.move_speed * attack_speed_modifier
-                # Don't change direction during attack
         else:
-            # Normal movement
             self.velocity_x = 0.0
             if left and not right:
                 self.velocity_x = -self.move_speed
@@ -233,21 +317,16 @@ class Player:
             elif right and not left:
                 self.velocity_x = self.move_speed
                 self.direction = 1
-            
-        # Jumping (can't jump while dashing or attacking)
-        # Allow jump if: on ground OR have jumps remaining (double jump)
-        if jump_just_pressed and not self.is_dashing and not self.is_attacking:
+        
+        # Jumping (can't jump while dashing, rolling, or attacking)
+        if jump_just_pressed and not self.is_dashing and not self.is_rolling and not self.is_attacking:
             if self.on_ground and self.jump_count == 0:
-                # First jump from ground
                 self.velocity_y = -self.jump_speed
                 self.on_ground = False
                 self.jump_count = 1
-                print("First jump!")  # Debug output
             elif not self.on_ground and self.jump_count < self.max_jumps:
-                # Double jump in air
                 self.velocity_y = -self.jump_speed
                 self.jump_count += 1
-                print(f"Double jump! ({self.jump_count}/{self.max_jumps})")  # Debug output
             
     def _start_attack(self, attack_number: int):
         """Start an attack (1 = Slash 1, 2 = Slash 2)."""
@@ -258,11 +337,9 @@ class Player:
         self.current_frame = 0
         self.frame_timer = 0.0
         self.enemies_hit_this_attack.clear()  # Clear hit tracking for new attack
-        print(f"Started Slash {attack_number}")  # Debug output
         
     def _queue_combo_attack(self):
         """Queue the second attack to start immediately."""
-        print(f"Combo queued! Transitioning to Slash 2")  # Debug output
         self._start_attack(2)
         # Disable combo window since we've used it
         self.combo_window_active = False
@@ -285,7 +362,6 @@ class Player:
         self.current_attack = 1  # Reset to first attack
         self.combo_window_active = False
         self.combo_window_timer = 0.0
-        print("Attack sequence ended")  # Debug output
             
     def _start_dash(self):
         """Start a dash."""
@@ -300,6 +376,38 @@ class Player:
         self.is_dashing = False
         self.dash_timer = 0.0
         self.dash_cooldown = self.dash_cooldown_duration
+        
+    def _start_roll(self, direction: int):
+        """Start a roll in the specified direction."""
+        self.is_rolling = True
+        self.roll_timer = 0.0
+        self.direction = direction  # Set roll direction
+        self.state = "roll"
+        self.current_frame = 0
+        self.frame_timer = 0.0
+        
+        # Enable invulnerability during most of the roll
+        self.is_invulnerable = True
+        self.invulnerability_timer = self.roll_invulnerability_duration
+        
+    def _end_roll(self):
+        """End a roll."""
+        if not self.is_rolling:
+            return
+        self.is_rolling = False
+        self.roll_timer = 0.0
+        self.roll_cooldown = self.roll_cooldown_duration
+        # Trim remaining i-frames
+        if self.invulnerability_timer > 0 and not self.is_spawning:
+            self.invulnerability_timer = min(self.invulnerability_timer, 0.1)
+        # Allow animation system to naturally transition next frame
+        
+    def _handle_roll_input(self, input_state: dict, dt: float):
+        """Handle input while rolling (limited options)."""
+        # During roll, player has limited control
+        # Roll movement is handled in the main movement logic
+        # No input changes during roll for now - could add early roll canceling later
+        pass
         
     def _detect_ledge_grab(self, world_map, input_state: dict) -> bool:
         """
@@ -387,8 +495,6 @@ class Player:
         
         # Reset jump count (hanging counts as landing)
         self.jump_count = 0
-        
-        print(f"Ledge grab started! Direction: {direction}")  # Debug output
     
     def _handle_ledge_grab_input(self, input_state: dict, dt: float):
         """Handle input while in ledge grab state."""
@@ -434,8 +540,6 @@ class Player:
         # Prevent immediate re-grab
         self.can_ledge_grab = False
         self.ledge_grab_timer = 0.5  # Cooldown before can grab again
-        
-        print("Climbed up from ledge!")  # Debug output
     
     def _drop_from_ledge(self):
         """Drop down from ledge grab."""
@@ -447,8 +551,6 @@ class Player:
         
         # Allow immediate grab again (might want to grab lower ledge)
         self.can_ledge_grab = True
-        
-        print("Dropped from ledge!")  # Debug output
     
     def _jump_off_ledge(self):
         """Jump off ledge in opposite direction."""
@@ -465,8 +567,6 @@ class Player:
         # Prevent immediate re-grab
         self.can_ledge_grab = False
         self.ledge_grab_timer = 0.3  # Short cooldown
-        
-        print("Jumped off ledge!")  # Debug output
     
     def _end_ledge_grab(self):
         """End ledge grab state."""
@@ -485,7 +585,221 @@ class Player:
         self.current_frame = 0
         self.frame_timer = 0.0
         
-        print("Ledge grab ended")  # Debug output
+    def _check_wall_collision(self, world_map, side: str = 'both') -> int:
+        """
+        Check if player can grab wall on specified side.
+        Returns: -1 for left wall, 1 for right wall, 0 for no wall
+        """
+        # Check both sides or specific side
+        sides_to_check = []
+        if side == 'both':
+            sides_to_check = ['left', 'right']
+        else:
+            sides_to_check = [side]
+        
+        for check_side in sides_to_check:
+            # Define check position based on side
+            check_x = self.pos_x + (-12 if check_side == 'left' else 12)
+            
+            # Check multiple points along player's height
+            check_points = [
+                self.pos_y - 30,  # Upper body
+                self.pos_y - 15,  # Middle body  
+                self.pos_y - 5    # Lower body
+            ]
+            
+            # If any point hits a solid tile, we found a wall
+            for check_y in check_points:
+                if world_map.is_solid_at_any_layer(check_x, check_y):
+                    return -1 if check_side == 'left' else 1
+                    
+        return 0  # No wall found
+    
+    def _detect_wall_grab(self, world_map, input_state: dict) -> int:
+        """
+        Detect if player should grab a wall.
+        Returns: -1 for left wall, 1 for right wall, 0 for no grab
+        """
+        # Only check for wall grab if conditions are met
+        if not self.can_wall_grab:
+            return 0
+        if self.is_wall_holding or self.is_ledge_grabbing or self.on_ground:
+            return 0
+        if self.is_dashing or self.is_attacking or self.is_spawning or self.is_dead:
+            return 0
+        
+        # Must be moving downward or at minimal upward velocity (not at jump peak)
+        if self.velocity_y < -200:  # Too high up velocity
+            return 0
+            
+        # Must have forward input toward the wall
+        left = input_state.get('left', False)
+        right = input_state.get('right', False)
+        
+        # Check direction of movement
+        wall_side = 0
+        if right and self.velocity_x > 0:
+            # Moving right, check for right wall
+            wall_side = self._check_wall_collision(world_map, 'right')
+        elif left and self.velocity_x < 0:
+            # Moving left, check for left wall
+            wall_side = self._check_wall_collision(world_map, 'left')
+        
+        return wall_side
+    
+    def _start_wall_hold(self, wall_side: int):
+        """Start wall hold state."""
+        self.is_wall_holding = True
+        self.wall_side = wall_side
+        self.wall_hold_timer = 0.0
+        
+        # Stop all velocity when grabbing wall
+        self.velocity_x = 0.0
+        self.velocity_y = 0.0  # Stop upward momentum completely
+        
+        # Set animation state
+        self.state = "wall_hold"
+        self.current_frame = 0
+        self.frame_timer = 0.0
+        self.direction = wall_side  # Face the wall
+        
+        # Reset jump count (wall grab acts like landing)
+        self.jump_count = 0
+        
+        # Only print debug message once when starting
+        if not hasattr(self, '_last_wall_grab_debug') or self._last_wall_grab_debug != wall_side:
+            self._last_wall_grab_debug = wall_side
+    
+    def _handle_wall_hold_input(self, input_state: dict, dt: float):
+        """Handle input while in wall hold state."""
+        jump = input_state.get('jump', False)
+        left = input_state.get('left', False)
+        right = input_state.get('right', False)
+        down = input_state.get('down', False)
+        
+        # Detect key presses
+        prev_jump = self.prev_input_state.get('jump', False)
+        prev_down = self.prev_input_state.get('down', False)
+        jump_just_pressed = jump and not prev_jump
+        down_just_pressed = down and not prev_down
+        
+        # Wall jump with jump key
+        if jump_just_pressed:
+            # Determine wall jump direction based on input
+            if (left and self.wall_side == 1) or (right and self.wall_side == -1):
+                # Pressing away from wall - 45° jump away
+                self._wall_jump('away')
+            elif (right and self.wall_side == 1) or (left and self.wall_side == -1):
+                # Pressing toward wall - push out then back toward wall
+                self._wall_jump('toward')
+            else:
+                # No horizontal input - small push away
+                self._wall_jump('neutral')
+        # Start wall slide with down key
+        elif down_just_pressed:
+            self._start_wall_slide()
+        # Release wall if not holding toward it
+        elif not ((left and self.wall_side == -1) or (right and self.wall_side == 1)):
+            self._end_wall_hold()
+    
+    def _wall_jump(self, direction: str):
+        """Perform wall jump in specified direction."""
+        # Set wall jump timer
+        self.wall_jump_timer = self.wall_jump_duration
+        
+        if direction == 'away':
+            # 45° jump away from wall
+            self.velocity_x = -self.wall_side * self.wall_jump_speed_x
+            self.velocity_y = -self.wall_jump_speed_y
+        elif direction == 'toward':
+            # Push out, propel up, move back toward wall
+            self.velocity_x = -self.wall_side * (self.wall_jump_speed_x * 0.5)
+            self.velocity_y = -self.wall_jump_speed_y * 1.1
+        else:  # neutral
+            # Small push away
+            self.velocity_x = -self.wall_side * (self.wall_jump_speed_x * 0.3)
+            self.velocity_y = -self.wall_jump_speed_y * 0.9
+        
+        # Set jump count to 1 (used first jump)
+        self.jump_count = 1
+        
+        # End wall hold
+        self._end_wall_hold()
+        
+        # Prevent immediate re-grab
+        self.can_wall_grab = False
+        self.wall_grab_cooldown = self.wall_grab_cooldown_duration
+    
+    def _start_wall_slide(self):
+        """Start wall sliding."""
+        self.state = "wall_transition"  # Transition animation
+        self.current_frame = 0
+        self.frame_timer = 0.0
+    
+    def _update_wall_slide(self, dt: float):
+        """Update wall sliding physics."""
+        # Only apply sliding physics if in sliding states, not during wall_hold grace period
+        if self.state in ["wall_transition", "wall_slide"]:
+            # Apply wall slide gravity
+            if self.velocity_y < self.wall_slide_max_speed:
+                self.velocity_y += self.wall_slide_speed * dt
+                if self.velocity_y > self.wall_slide_max_speed:
+                    self.velocity_y = self.wall_slide_max_speed
+        # During wall_hold state, maintain zero velocity (grace period)
+        elif self.state == "wall_hold":
+            self.velocity_y = 0.0
+    
+    def _end_wall_hold(self):
+        """End wall hold state."""
+        self.is_wall_holding = False
+        self.wall_side = 0
+        self.on_ground = False  # In air after wall hold
+        
+        # Reset debug tracking
+        if hasattr(self, '_last_wall_grab_debug'):
+            self._last_wall_grab_debug = None
+        
+        # Transition to appropriate movement state
+        if self.velocity_y > 0:
+            self.state = "fall"
+        elif self.velocity_y < 0:
+            self.state = "jump"
+        else:
+            self.state = "fall"  # Default to fall when leaving wall
+            
+        # Reset animation frame
+        self.current_frame = 0
+        self.frame_timer = 0.0
+        
+    def _update_wall_hold_state(self, dt: float):
+        """Update wall hold animation state based on timer and conditions."""
+        # Update wall hold timer
+        self.wall_hold_timer += dt
+        
+        # Wall hold state machine
+        if self.state == "wall_hold":
+            # After grace period, start sliding
+            if self.wall_hold_timer > self.wall_hold_grace_time:
+                self.state = "wall_transition"
+                self.current_frame = 0
+                self.frame_timer = 0.0
+        elif self.state == "wall_transition":
+            # Check if transition animation is complete
+            transition_animation = self.animation_loader.get_animation('wall_transition')
+            if transition_animation and self.current_frame >= len(transition_animation['surfaces_right']) - 1:
+                self.state = "wall_slide"
+                self.current_frame = 0
+                self.frame_timer = 0.0
+        elif self.state == "wall_slide":
+            # Continue sliding until released or stopped
+            pass
+        elif self.state == "wall_slide_stop":
+            # Check if stop animation is complete, then hold
+            stop_animation = self.animation_loader.get_animation('wall_slide_stop')
+            if stop_animation and self.current_frame >= len(stop_animation['surfaces_right']) - 1:
+                self.state = "wall_hold"
+                self.current_frame = 0
+                self.frame_timer = 0.0
             
     def _apply_physics(self, dt: float):
         """Apply gravity and basic physics."""
@@ -497,6 +811,15 @@ class Player:
         if self.is_ledge_grabbing:
             return
             
+        # Check wall hold conditions if wall holding
+        if self.is_wall_holding:
+            # Check if still touching wall
+            wall_still_exists = self._check_wall_collision(world_map, 'left' if self.wall_side == -1 else 'right')
+            if wall_still_exists == 0:
+                # Wall ended, release hold
+                self._end_wall_hold()
+                return
+                
         # Horizontal movement with collision
         new_x = self.pos_x + self.velocity_x * dt
         
@@ -530,6 +853,9 @@ class Player:
                 self.velocity_y = 0.0
                 self.on_ground = True
                 self.jump_count = 0  # Reset jump count when landing
+                # End wall hold if touching ground
+                if self.is_wall_holding:
+                    self._end_wall_hold()
             # Check for platform tiles (only stop if falling onto them from above)
             elif world_map.is_platform_at_any_layer(self.pos_x, foot_y):
                 # Only land on platform if we're falling from above
@@ -542,6 +868,9 @@ class Player:
                     self.velocity_y = 0.0
                     self.on_ground = True
                     self.jump_count = 0  # Reset jump count when landing
+                    # End wall hold if touching ground
+                    if self.is_wall_holding:
+                        self._end_wall_hold()
                 else:
                     # We're inside or below the platform, pass through
                     self.pos_y = new_y
@@ -589,7 +918,8 @@ class Player:
     def _update_animation(self, dt: float):
         """Update animation state and frame."""
         # Handle special states that should not be overridden
-        special_states = ["spawn", "hit", "death", "ledge_grab"]
+        # Note: 'roll' intentionally NOT in special_states so animation can revert naturally after timing ends
+        special_states = ["spawn", "hit", "death", "ledge_grab", "wall_hold", "wall_transition", "wall_slide", "wall_slide_stop"]
         
         # For spawning state
         if self.is_spawning:
@@ -603,12 +933,21 @@ class Player:
                 self.state = "death"
                 self.current_frame = 0
                 self.frame_timer = 0.0
+        # For roll state (transient; not locked like other special states)
+        elif self.is_rolling:
+            if self.state != "roll":
+                self.state = "roll"
+                self.current_frame = 0
+                self.frame_timer = 0.0
         # For ledge grab state
         elif self.is_ledge_grabbing:
             if self.state != "ledge_grab":
                 self.state = "ledge_grab"
                 self.current_frame = 0
                 self.frame_timer = 0.0
+        # For wall hold state
+        elif self.is_wall_holding:
+            self._update_wall_hold_state(dt)
         # For hit state (during invulnerability after taking damage)
         elif self.is_invulnerable and not self.is_spawning and self.health > 0:
             if self.state != "hit":
@@ -667,7 +1006,7 @@ class Player:
                     direction = self.animation_loader.get_animation_direction(self.state)
                     if direction == "forward":
                         # For special animations that should complete once
-                        if self.state in ["attack1", "attack2", "dash", "spawn", "hit", "death"]:
+                        if self.state in ["attack1", "attack2", "dash", "spawn", "hit", "death", "roll"]:
                             if self.current_frame >= len(frames) - 1:
                                 # Animation completed
                                 self.current_frame = len(frames) - 1
@@ -676,12 +1015,14 @@ class Player:
                                 if self.state == "spawn":
                                     self.is_spawning = False
                                     self.is_invulnerable = False  # End spawn invulnerability
-                                    print("Player spawn complete")  # Debug output
                                 elif self.state == "hit":
                                     # Hit animation complete, but invulnerability may continue
                                     pass  # Let invulnerability timer handle state change
                                 elif self.state == "death":
                                     # Death animation complete - stay in death state
+                                    pass
+                                elif self.state == "roll":
+                                    # Roll animation complete - let timer handle state change
                                     pass
                             else:
                                 self.current_frame += 1
@@ -692,7 +1033,7 @@ class Player:
                         self.current_frame = (self.current_frame - 1) % len(frames)
                     else:  # pingpong or other directions - default to forward for now
                         # For special animations that should complete once
-                        if self.state in ["attack1", "attack2", "dash", "spawn", "hit", "death"]:
+                        if self.state in ["attack1", "attack2", "dash", "spawn", "hit", "death", "roll"]:
                             if self.current_frame >= len(frames) - 1:
                                 # Animation completed
                                 self.current_frame = len(frames) - 1
@@ -701,12 +1042,14 @@ class Player:
                                 if self.state == "spawn":
                                     self.is_spawning = False
                                     self.is_invulnerable = False  # End spawn invulnerability
-                                    print("Player spawn complete")  # Debug output
                                 elif self.state == "hit":
                                     # Hit animation complete, but invulnerability may continue
                                     pass  # Let invulnerability timer handle state change
                                 elif self.state == "death":
                                     # Death animation complete - stay in death state
+                                    pass
+                                elif self.state == "roll":
+                                    # Roll animation complete - let timer handle state change
                                     pass
                             else:
                                 self.current_frame += 1
@@ -791,7 +1134,6 @@ class Player:
         self.state = "idle"
         self.current_frame = 0
         self.frame_timer = 0.0
-        print("Player spawn complete")  # Debug output
     
     def _handle_spawn_input(self, input_state: dict, dt: float):
         """Handle input during spawn animation (no input allowed)."""
@@ -812,7 +1154,6 @@ class Player:
             return False  # No damage taken
         
         self.health -= damage
-        print(f"Player hit! Health: {self.health}/{self.max_health}")  # Debug output
         
         if self.health <= 0:
             self._trigger_death()
@@ -839,9 +1180,7 @@ class Player:
         self.frame_timer = 0.0
         self.velocity_x = 0.0
         self.velocity_y = 0.0
-        print("Player died!")  # Debug output
     
     def respawn(self):
         """Request respawn (to be handled by game class)."""
         self.respawn_requested = True
-        print("Player respawn requested!")  # Debug output

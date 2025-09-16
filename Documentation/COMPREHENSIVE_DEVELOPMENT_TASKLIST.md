@@ -22,32 +22,39 @@ This document provides a comprehensive roadmap for the continued development of 
 
 ## 🚀 Development Phases
 
-### **Phase 1: Enhanced Movement System** 🏃‍♂️
-*Priority: HIGH | Estimated Time: 2-3 weeks*
+### **Phase 1: Enhanced Movement System** ✅
+*Priority: HIGH | Status: COMPLETED | Time Taken: 1 week*
 
 **Goal**: Expand player traversal capabilities with advanced movement mechanics using existing animations.
 
 #### Core Features
-- [ ] **Double Jump System**
+- [x] **Double Jump System** ✅
   - **Description**: Add second jump ability when player is airborne
   - **Implementation**: Track jump count, reset on landing, modify `_handle_input()` in `player.py`
   - **Animation**: Use existing jump animation for second jump
   - **Controls**: Space key (same as regular jump)
   - **Mechanics**: Only allow when `jump_count < 2` and not on ground
 
-- [ ] **Ledge Grab System**
+- [x] **Ledge Grab System** ✅
   - **Description**: Allow player to grab and hang from ledge edges
   - **Implementation**: Detect ledge edges in collision system, add grab state
   - **Animation**: "Ledge Grab" (5 frames available)
-  - **Controls**: Automatic when falling near ledge edge
-  - **Mechanics**: Can climb up (W/Space) or drop down (S)
+  - **Controls**: Automatic when falling near ledge edge with forward input
+  - **Mechanics**: Can climb up (W/Space), drop down (S), or jump off (opposite direction)
 
-- [ ] **Wall Hold Mechanics**
+- [x] **Wall Hold Mechanics** ✅
   - **Description**: Enable wall clinging when airborne against walls
   - **Implementation**: Add wall proximity detection, wall hold state
   - **Animation**: "Wall hold" (1 frame static hold)
-  - **Controls**: Hold Shift while against wall (no ground beneath)
-  - **Mechanics**: Slowly slide down if no input, can jump off wall
+  - **Controls**: Automatic when moving toward wall while airborne
+  - **Mechanics**: Brief hold period, then slides down, can wall jump
+
+- [x] **Wall Slide System** ✅
+  - **Description**: Controlled sliding down walls with animation transitions
+  - **Implementation**: Wall slide physics with grace period and speed control
+  - **Animation**: "Wall Transition" → "Wall Slide" → "Wall slide Stop"
+  - **Controls**: Press S/Down to initiate slide from wall hold
+  - **Mechanics**: Controlled descent speed, directional wall jumping
 
 - [ ] **Wall Slide System**
   - **Description**: Controlled sliding down walls from wall hold
@@ -57,16 +64,25 @@ This document provides a comprehensive roadmap for the continued development of 
   - **Mechanics**: Can stop slide by releasing S, can jump off during slide
 
 #### Technical Requirements
-- Add wall detection raycasting
-- Implement ledge edge detection algorithm
-- Add new player states: `wall_hold`, `wall_slide`, `ledge_grab`
-- Modify collision system for wall/ledge detection
-- Add jump count tracking and management
+- ✅ Wall detection raycasting with multi-point collision checks
+- ✅ Ledge edge detection algorithm with forward movement requirement
+- ✅ New player states: `wall_hold`, `wall_slide`, `wall_transition`, `wall_slide_stop`, `ledge_grab`
+- ✅ Enhanced collision system for wall/ledge detection and release conditions
+- ✅ Jump count tracking, wall jump mechanics, and state management
+- ✅ Wall slide physics with grace periods and controlled descent speed
 
-#### Files to Modify
-- `src/game/player.py`: Core movement logic and state management
-- `src/engine/world.py`: Wall/ledge detection methods
-- `src/utils/aseprite_animation_loader.py`: Animation mapping updates
+#### Files Modified
+- ✅ `src/game/player.py`: Complete wall/ledge system implementation
+- ✅ `src/utils/aseprite_animation_loader.py`: Added wall animation mappings
+- ✅ Enhanced input handling for wall jump directional controls
+- ✅ Animation state machine updates for wall mechanics
+
+#### Implementation Summary
+**Double Jump**: Tracks jump count (max 2), resets on landing or wall grab  
+**Ledge Grab**: Auto-detects when falling near ledge with forward input, supports climb/drop/jump-off  
+**Wall Hold**: Auto-grabs walls when moving toward them while airborne, brief grace period before sliding  
+**Wall Slide**: Smooth transitions through wall_transition → wall_slide animations with controlled physics  
+**Wall Jump**: Directional jumping with three modes (away/toward/neutral) and proper state transitions
 
 ---
 
@@ -76,12 +92,12 @@ This document provides a comprehensive roadmap for the continued development of 
 **Goal**: Enhance combat depth with new offensive and defensive abilities.
 
 #### Core Features
-- [ ] **Player Roll System**
+- [x] **Player Roll System** ✅
   - **Description**: Evasive roll with invincibility frames
   - **Implementation**: Add roll state with i-frames, movement burst
   - **Animation**: "Roll" (8 frames available)
-  - **Controls**: Shift + movement direction (or dedicated key)
-  - **Mechanics**: 0.8s duration, invulnerable during roll, slight distance travel
+  - **Controls**: Shift key + optional movement direction
+  - **Mechanics**: 0.8s duration, 0.6s invulnerable, 200px/s speed, 1.0s cooldown
 
 - [ ] **Downward Attack (Aerial)**
   - **Description**: Downward striking attack while falling
