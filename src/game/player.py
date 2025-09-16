@@ -2,7 +2,7 @@
 import pygame
 from typing import List, Tuple
 
-from ..utils.aseprite_animation_loader import AsepriteAnimationLoader
+from ..animations.player_animation_loader import PlayerAnimationLoader
 
 
 class Player:
@@ -132,10 +132,10 @@ class Player:
         self.jump_speed = 700.0
         self.gravity = 1400.0
         
-        # Load Aseprite animations
+        # Load Player animations using the new modular system
         aseprite_json_path = "Assests/SwordMaster/SwordMaster.json"
-        self.animation_loader = AsepriteAnimationLoader(aseprite_json_path, scale)
-        self.animation_loader.load_all_animations()
+        self.animation_loader = PlayerAnimationLoader(aseprite_json_path, scale)
+        self.animation_loader.load_player_animations()
         
         # Start with spawn animation
         self.start_spawn()

@@ -3,7 +3,7 @@ import pygame
 import random
 from typing import List, Tuple
 
-from ..utils.aseprite_animation_loader import AsepriteAnimationLoader
+from ..animations.enemy_animation_loader import AssassinAnimationLoader
 
 
 class Enemy:
@@ -401,23 +401,10 @@ class AssassinEnemy(Enemy):
     def __init__(self, x: float, y: float, scale: int = 2):
         super().__init__(x, y, scale)
         
-        # Load Aseprite animations
+        # Load Assassin animations using the new modular system
         aseprite_json_path = "Assests/enemies/assassin/Assassin.json"
-        self.animation_loader = AsepriteAnimationLoader(aseprite_json_path, scale)
-        
-        # Define which animations to load for the assassin
-        assassin_animations = {
-            'idle': 'idle',
-            'run': 'run', 
-            'jump': 'jump',
-            'fall': 'fall',
-            'attack1': 'attack 1',
-            'attack2': 'attack 2',
-            'hit': 'hit',
-            'death': 'death'
-        }
-        
-        self.animation_loader.load_all_animations(assassin_animations)
+        self.animation_loader = AssassinAnimationLoader(aseprite_json_path, scale)
+        self.animation_loader.load_assassin_animations()
         
         # Set initial state to idle
         self.state = "idle"

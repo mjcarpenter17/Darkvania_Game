@@ -171,7 +171,10 @@ class Game:
             spawn_pos = self.world.find_spawn_point("Player")
             if spawn_pos:
                 player_x, player_y = spawn_pos
-                print(f"Player spawned at 'Player' spawn point: ({player_x}, {player_y})")
+                print(f"Player spawned at 'Player' spawn point:")
+                print(f"  Grid coordinates: (30, 24)")
+                print(f"  World coordinates: ({player_x}, {player_y})")
+                print(f"  Calculation: (30 * {self.world.tile_size} * {self.scale}, 24 * {self.world.tile_size} * {self.scale})")
             else:
                 # Fallback to center of map
                 player_x = float(self.world.map_cols * self.world.tile_size * self.scale // 2)
