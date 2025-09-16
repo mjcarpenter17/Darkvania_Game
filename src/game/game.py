@@ -304,7 +304,7 @@ class Game:
     
     def _check_player_enemy_collisions(self):
         """Check for collisions between player attacks and enemies."""
-        if not self.player or not self.player.is_attacking:
+        if not self.player or (not self.player.is_attacking and not self.player.is_fall_attacking and not self.player.is_slam_attacking):
             return
             
         # Get player attack box when attacking
@@ -312,19 +312,68 @@ class Game:
         if not attack_box:
             return
             
+        # Calculate damage based on attack type
+        damage = 1  # Base damage
+        if self.player.is_fall_attacking:
+            damage = int(damage * self.player.fall_attack_damage_multiplier)  # Enhanced damage for fall attack
+        elif self.player.is_slam_attacking:
+            damage = int(damage * self.player.slam_damage_multiplier)  # Enhanced damage for slam attack
+            
         # Check collision with each enemy
         for enemy in self.enemies:
             # Only hit enemies that haven't been hit during this attack
             if (id(enemy) not in self.player.enemies_hit_this_attack and 
                 self._check_enemy_hit_by_attack(enemy, attack_box)):
-                enemy.take_damage(1)  # Deal 1 damage to enemy
+                enemy.take_damage(damage)  # Deal calculated damage to enemy
                 self.player.enemies_hit_this_attack.add(id(enemy))  # Mark this enemy as hit
+                
+                # Add upward propulsion for fall attacks that hit enemies
+                if self.player.is_fall_attacking:
+                    self.player.velocity_y = -self.player.jump_speed * 1.2  # Full jump strength propulsion
+                    print("Downward attack hit enemy - propelling player upward!")
     
     def _get_player_attack_box(self):
         """Get the collision box for the player's current attack."""
-        if not self.player or not self.player.is_attacking:
+        if not self.player or (not self.player.is_attacking and not self.player.is_fall_attacking and not self.player.is_slam_attacking):
             return None
             
+        # Handle fall attack (downward attack)
+        if self.player.is_fall_attacking:
+            # Downward attack box - wider but shorter, positioned below player
+            attack_width = 50 * self.scale  # Wider than regular attacks
+            attack_height = 15 * self.scale  # Much shorter height (reduced from 30 to 15)
+            
+            # Center the attack box below the player
+            attack_x = self.player.pos_x - (attack_width // 2)
+            attack_y = self.player.pos_y - 5  # Closer to player feet (reduced from -10 to -5)
+            
+            return {
+                'x': attack_x,
+                'y': attack_y,
+                'width': attack_width,
+                'height': attack_height
+            }
+            
+        # Handle slam attack (area of effect around player)
+        if self.player.is_slam_attacking:
+            # Slam attack box - circular area around player
+            attack_radius = self.player.slam_aoe_radius * self.scale
+            attack_width = attack_radius * 2
+            attack_height = attack_radius * 2
+            
+            # Center the attack box around the player
+            attack_x = self.player.pos_x - attack_radius
+            attack_y = self.player.pos_y - attack_radius
+            
+            return {
+                'x': attack_x,
+                'y': attack_y,
+                'width': attack_width,
+                'height': attack_height,
+                'is_aoe': True  # Flag to indicate this is an area attack
+            }
+            
+        # Regular horizontal attacks
         # Attack box dimensions (adjust these values based on the attack animation)
         attack_width = 40 * self.scale  # Width of attack reach
         attack_height = 25 * self.scale  # Height of attack reach

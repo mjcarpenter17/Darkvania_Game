@@ -50,6 +50,8 @@ class AsepriteAnimationLoader:
             self._load_animation('wall_slide_stop', 'Wall slide Stop')
             # Combat abilities
             self._load_animation('roll', 'Roll')
+            self._load_animation('fall_attack', 'Fall Attack')
+            self._load_animation('slam_attack', 'Slam')
         else:
             # Custom animation list (for enemies, etc.)
             for state_name, aseprite_name in animation_list.items():

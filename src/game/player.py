@@ -57,7 +57,7 @@ class Player:
         self.roll_direction = 1  # Direction captured at roll start
         
         # Animation
-        self.state = "idle"  # idle, walk, jump, trans, fall, dash, attack1, attack2, ledge_grab, wall_hold, wall_transition, wall_slide, wall_slide_stop, roll
+        self.state = "idle"  # idle, walk, jump, trans, fall, dash, attack1, attack2, ledge_grab, wall_hold, wall_transition, wall_slide, wall_slide_stop, roll, fall_attack, slam_attack
         self.prev_state = self.state
         self.current_frame = 0
         self.frame_timer = 0.0
@@ -84,6 +84,30 @@ class Player:
         
         # Attack hit tracking (to prevent multiple hits per attack)
         self.enemies_hit_this_attack = set()  # Track which enemies have been hit during current attack
+        
+        # Downward attack (aerial) mechanics
+        self.is_fall_attacking = False
+        self.fall_attack_timer = 0.0
+        self.fall_attack_duration = 0.7  # Fall Attack: 7 frames * 100ms
+        self.fall_attack_damage_multiplier = 1.5  # 50% more damage than regular attacks
+        self.fall_attack_speed_multiplier = 2.0  # Fall faster during attack
+        self.fall_attack_cooldown = 0.0
+        self.fall_attack_cooldown_duration = 1.2  # Slightly longer cooldown than regular attacks
+        self.fall_attack_invulnerability_duration = 0.25  # Invulnerability during fall attack
+        
+        # Slam attack (charged) mechanics
+        self.is_slam_charging = False
+        self.is_slam_attacking = False
+        self.slam_charge_timer = 0.0
+        self.slam_charge_duration = 1.0  # Hold F for 1 second to charge
+        self.slam_charge_delay = 0.2  # Delay before slam charging starts (allows regular attacks)
+        self.slam_potential_timer = 0.0  # Timer for potential slam charge
+        self.slam_attack_timer = 0.0
+        self.slam_attack_duration = 0.6  # Slam animation duration
+        self.slam_damage_multiplier = 2.0  # 100% more damage than regular attacks
+        self.slam_aoe_radius = 60  # Area of effect radius in pixels
+        self.slam_cooldown = 0.0
+        self.slam_cooldown_duration = 2.0  # Longer cooldown for powerful attack
         
         # Health and damage system
         self.max_health = 2
@@ -205,6 +229,7 @@ class Player:
         dash = input_state.get('dash', False)
         attack = input_state.get('attack', False)
         roll = input_state.get('roll', False)
+        down = input_state.get('down', False)  # For downward attack
         
         # Detect newly pressed keys (not held keys)
         prev_attack = self.prev_input_state.get('attack', False)
@@ -223,6 +248,10 @@ class Player:
             self.attack_cooldown -= dt
         if self.roll_cooldown > 0:
             self.roll_cooldown -= dt
+        if self.fall_attack_cooldown > 0:
+            self.fall_attack_cooldown -= dt
+        if self.slam_cooldown > 0:
+            self.slam_cooldown -= dt
         if self.ledge_grab_timer > 0:
             self.ledge_grab_timer -= dt
             if self.ledge_grab_timer <= 0:
@@ -241,23 +270,53 @@ class Player:
                 self.combo_window_active = False
                 self.combo_window_timer = 0.0
         
-        # Handle attack input with proper key press detection
+        # Handle attack input with proper key press detection (prioritized first)
         if attack_just_pressed:
-            if not self.is_attacking and self.attack_cooldown <= 0:
+            # Reset slam potential timer when F is pressed (gives priority to regular attacks)
+            self.slam_potential_timer = 0.0
+            
+            # Check for downward attack (S + F while airborne/falling)
+            if down and not self.on_ground and self.velocity_y > 0 and not self.is_fall_attacking and not self.is_attacking and not self.is_dashing and not self.is_rolling and not self.is_slam_charging and not self.is_slam_attacking and self.fall_attack_cooldown <= 0:
+                self._start_fall_attack()
+            elif not self.is_attacking and not self.is_slam_charging and not self.is_slam_attacking and self.attack_cooldown <= 0:
                 # Start first attack and begin combo window
                 self._start_attack(1)
                 self.combo_window_active = True
                 self.combo_window_timer = self.combo_window_duration
-            elif self.combo_window_active and self.current_attack == 1:
+            elif self.combo_window_active and self.current_attack == 1 and not self.is_slam_charging:
                 # Second attack pressed during combo window - queue Slash 2
                 self._queue_combo_attack()
         
+        # Handle slam attack charging (only when F is held AND no attacks are active)
+        elif attack and self.on_ground and not self.is_slam_charging and not self.is_slam_attacking and not self.is_attacking and not self.is_dashing and not self.is_rolling and self.slam_cooldown <= 0 and self.attack_cooldown <= 0:
+            # Build up potential slam charge timer only when not in any attack state
+            self.slam_potential_timer += dt
+            if self.slam_potential_timer >= self.slam_charge_delay:
+                # Start actual slam charging after delay
+                self._start_slam_charge()
+        elif not attack:
+            # F released - reset potential timer and handle slam state
+            if self.slam_potential_timer > 0:
+                self.slam_potential_timer = 0.0
+            elif self.is_slam_charging:
+                # F released during slam charging
+                if self.slam_charge_timer >= self.slam_charge_duration:
+                    self._execute_slam_attack()
+                else:
+                    self._cancel_slam_charge()
+        elif self.is_slam_charging and attack:
+            # Continue charging
+            self.slam_charge_timer += dt
+            if self.slam_charge_timer >= self.slam_charge_duration:
+                # Fully charged, ready to execute
+                pass  # Visual feedback could be added here
+        
         # Handle dash input (cannot dash during attacks)
-        if dash_just_pressed and not self.is_dashing and not self.is_attacking and self.dash_cooldown <= 0:
+        if dash_just_pressed and not self.is_dashing and not self.is_attacking and not self.is_slam_charging and not self.is_slam_attacking and self.dash_cooldown <= 0:
             self._start_dash()
         
         # Handle roll input (cannot roll during attacks, dash, wall/ledge states, or while already rolling)
-        if roll_just_pressed and not self.is_rolling and not self.is_attacking and not self.is_dashing and not self.is_wall_holding and not self.is_ledge_grabbing and self.roll_cooldown <= 0:
+        if roll_just_pressed and not self.is_rolling and not self.is_attacking and not self.is_dashing and not self.is_wall_holding and not self.is_ledge_grabbing and not self.is_slam_charging and not self.is_slam_attacking and self.roll_cooldown <= 0:
             # Determine roll direction (prefer current input, fallback to facing direction)
             if left and not right:
                 self.roll_direction = -1
@@ -294,7 +353,19 @@ class Player:
             elif self.roll_timer >= (self.roll_duration + 0.2):
                 self._end_roll()
         
-        # Horizontal movement (modified for dash, roll, and attack)
+        # Update fall attack state
+        if self.is_fall_attacking:
+            self.fall_attack_timer += dt
+            if self.fall_attack_timer >= self.fall_attack_duration:
+                self._end_fall_attack()
+        
+        # Update slam attack state
+        if self.is_slam_attacking:
+            self.slam_attack_timer += dt
+            if self.slam_attack_timer >= self.slam_attack_duration:
+                self._end_slam_attack()
+        
+        # Horizontal movement (modified for dash, roll, attack, and fall attack)
         if self.is_rolling:
             # Maintain constant speed in captured roll direction
             self.velocity_x = self.roll_direction * self.roll_speed
@@ -302,6 +373,16 @@ class Player:
         elif self.is_dashing:
             # During dash, maintain dash speed in current direction
             self.velocity_x = self.direction * self.dash_speed
+        elif self.is_fall_attacking:
+            # Slight horizontal control during fall attack
+            self.velocity_x = 0.0
+            if left and not right:
+                self.velocity_x = -self.move_speed * 0.3  # Reduced horizontal control
+            elif right and not left:
+                self.velocity_x = self.move_speed * 0.3
+        elif self.is_slam_charging or self.is_slam_attacking:
+            # No movement during slam charge or attack
+            self.velocity_x = 0.0
         elif self.is_attacking:
             attack_speed_modifier = 0.1 if self.current_attack == 2 else 0.2
             self.velocity_x = 0.0
@@ -318,8 +399,8 @@ class Player:
                 self.velocity_x = self.move_speed
                 self.direction = 1
         
-        # Jumping (can't jump while dashing, rolling, or attacking)
-        if jump_just_pressed and not self.is_dashing and not self.is_rolling and not self.is_attacking:
+        # Jumping (can't jump while dashing, rolling, attacking, or fall attacking)
+        if jump_just_pressed and not self.is_dashing and not self.is_rolling and not self.is_attacking and not self.is_fall_attacking and not self.is_slam_charging and not self.is_slam_attacking:
             if self.on_ground and self.jump_count == 0:
                 self.velocity_y = -self.jump_speed
                 self.on_ground = False
@@ -409,6 +490,58 @@ class Player:
         # No input changes during roll for now - could add early roll canceling later
         pass
         
+    def _start_fall_attack(self):
+        """Start a downward aerial attack."""
+        self.is_fall_attacking = True
+        self.fall_attack_timer = 0.0
+        self.state = "fall_attack"
+        self.current_frame = 0
+        self.frame_timer = 0.0
+        self.enemies_hit_this_attack.clear()  # Clear hit tracking for new attack
+        
+        # Enable invulnerability during fall attack
+        self.is_invulnerable = True
+        self.invulnerability_timer = self.fall_attack_invulnerability_duration
+        
+    def _end_fall_attack(self):
+        """End the fall attack."""
+        self.is_fall_attacking = False
+        self.fall_attack_timer = 0.0
+        self.fall_attack_cooldown = self.fall_attack_cooldown_duration
+        
+    def _start_slam_charge(self):
+        """Start charging a slam attack."""
+        self.is_slam_charging = True
+        self.slam_charge_timer = 0.0
+        self.slam_potential_timer = 0.0  # Reset potential timer
+        print("Started charging slam attack...")  # Debug output
+        
+    def _cancel_slam_charge(self):
+        """Cancel slam charge if not held long enough."""
+        self.is_slam_charging = False
+        self.slam_charge_timer = 0.0
+        self.slam_potential_timer = 0.0  # Reset potential timer
+        print("Slam charge cancelled - not held long enough")  # Debug output
+        
+    def _execute_slam_attack(self):
+        """Execute the charged slam attack."""
+        self.is_slam_charging = False
+        self.is_slam_attacking = True
+        self.slam_charge_timer = 0.0
+        self.slam_potential_timer = 0.0  # Reset potential timer
+        self.slam_attack_timer = 0.0
+        self.state = "slam_attack"
+        self.current_frame = 0
+        self.frame_timer = 0.0
+        self.enemies_hit_this_attack.clear()  # Clear hit tracking for new attack
+        print("Executing slam attack!")  # Debug output
+        
+    def _end_slam_attack(self):
+        """End the slam attack."""
+        self.is_slam_attacking = False
+        self.slam_attack_timer = 0.0
+        self.slam_cooldown = self.slam_cooldown_duration
+        
     def _detect_ledge_grab(self, world_map, input_state: dict) -> bool:
         """
         Detect if player should grab a ledge.
@@ -419,7 +552,7 @@ class Player:
             return False
         if self.is_ledge_grabbing or self.on_ground:
             return False
-        if self.is_dashing or self.is_attacking or self.is_spawning or self.is_dead:
+        if self.is_dashing or self.is_attacking or self.is_spawning or self.is_dead or self.is_fall_attacking:
             return False
         if self.velocity_y <= 0:  # Must be falling (not jumping up)
             return False
@@ -625,7 +758,7 @@ class Player:
             return 0
         if self.is_wall_holding or self.is_ledge_grabbing or self.on_ground:
             return 0
-        if self.is_dashing or self.is_attacking or self.is_spawning or self.is_dead:
+        if self.is_dashing or self.is_attacking or self.is_spawning or self.is_dead or self.is_fall_attacking:
             return 0
         
         # Must be moving downward or at minimal upward velocity (not at jump peak)
@@ -803,7 +936,12 @@ class Player:
             
     def _apply_physics(self, dt: float):
         """Apply gravity and basic physics."""
-        self.velocity_y += self.gravity * dt
+        if self.is_fall_attacking:
+            # Apply enhanced gravity during fall attack for faster descent
+            self.velocity_y += self.gravity * self.fall_attack_speed_multiplier * dt
+        else:
+            # Normal gravity
+            self.velocity_y += self.gravity * dt
         
     def _handle_collisions(self, world_map, dt: float):
         """Handle collision detection and response with the world."""
@@ -939,6 +1077,18 @@ class Player:
                 self.state = "roll"
                 self.current_frame = 0
                 self.frame_timer = 0.0
+        # For fall attack state (transient; not locked like other special states)
+        elif self.is_fall_attacking:
+            if self.state != "fall_attack":
+                self.state = "fall_attack"
+                self.current_frame = 0
+                self.frame_timer = 0.0
+        # For slam attack state (transient; not locked like other special states)
+        elif self.is_slam_attacking:
+            if self.state != "slam_attack":
+                self.state = "slam_attack"
+                self.current_frame = 0
+                self.frame_timer = 0.0
         # For ledge grab state
         elif self.is_ledge_grabbing:
             if self.state != "ledge_grab":
@@ -1006,7 +1156,7 @@ class Player:
                     direction = self.animation_loader.get_animation_direction(self.state)
                     if direction == "forward":
                         # For special animations that should complete once
-                        if self.state in ["attack1", "attack2", "dash", "spawn", "hit", "death", "roll"]:
+                        if self.state in ["attack1", "attack2", "dash", "spawn", "hit", "death", "roll", "fall_attack"]:
                             if self.current_frame >= len(frames) - 1:
                                 # Animation completed
                                 self.current_frame = len(frames) - 1
@@ -1023,6 +1173,9 @@ class Player:
                                     pass
                                 elif self.state == "roll":
                                     # Roll animation complete - let timer handle state change
+                                    pass
+                                elif self.state == "fall_attack":
+                                    # Fall attack animation complete - let timer handle state change
                                     pass
                             else:
                                 self.current_frame += 1
@@ -1033,7 +1186,7 @@ class Player:
                         self.current_frame = (self.current_frame - 1) % len(frames)
                     else:  # pingpong or other directions - default to forward for now
                         # For special animations that should complete once
-                        if self.state in ["attack1", "attack2", "dash", "spawn", "hit", "death", "roll"]:
+                        if self.state in ["attack1", "attack2", "dash", "spawn", "hit", "death", "roll", "fall_attack"]:
                             if self.current_frame >= len(frames) - 1:
                                 # Animation completed
                                 self.current_frame = len(frames) - 1
@@ -1050,6 +1203,9 @@ class Player:
                                     pass
                                 elif self.state == "roll":
                                     # Roll animation complete - let timer handle state change
+                                    pass
+                                elif self.state == "fall_attack":
+                                    # Fall attack animation complete - let timer handle state change
                                     pass
                             else:
                                 self.current_frame += 1
