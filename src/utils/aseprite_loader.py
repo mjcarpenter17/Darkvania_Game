@@ -113,7 +113,7 @@ class AsepriteLoader:
         # Create frame index mapping based on order in JSON
         frame_names = list(frames_data.keys())
         for index, name in enumerate(frame_names):
-            self.frame_index_map[index + 1] = name  # Aseprite uses 1-based indexing
+            self.frame_index_map[index] = name  # Use 0-based indexing to match frameTags
             
         # Parse each frame
         for name, frame_data in frames_data.items():

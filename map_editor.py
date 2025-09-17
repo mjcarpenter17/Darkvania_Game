@@ -697,6 +697,7 @@ class TileEditor:
             ("enemy", "Enemy", (255, 80, 80)),      # Red
             ("spawn", "Spawn", (80, 150, 255)),     # Blue  
             ("collectible", "Item", (80, 255, 80)), # Green
+            ("chest", "Chest", (223, 197, 123)),    # Gold (#DFC57B)
             ("event", "Event", (255, 255, 80)),     # Yellow
             ("checkpoint", "Save", (255, 150, 80)), # Orange
             ("interactive", "Door", (200, 80, 255)) # Purple

@@ -5,6 +5,8 @@ from typing import Optional, List
 
 from .player import Player
 from .enemy import Enemy, AssassinEnemy
+from .collectible import create_collectible, Collectible
+from .interactables import Chest
 from ..engine.world import World
 from ..engine.camera import Camera
 from ..ui.game_state import GameState
@@ -33,6 +35,8 @@ class Game:
         self.world: Optional[World] = None
         self.camera: Optional[Camera] = None
         self.enemies: List = []  # List to store enemy instances
+        self.collectibles: List[Collectible] = []  # List to store collectible instances
+        self.chests: List[Chest] = []  # List to store chest instances
         
         # Colors
         self.bg_color = (20, 20, 25)
@@ -186,6 +190,12 @@ class Game:
             # Initialize enemies
             self._spawn_enemies()
             
+            # Initialize collectibles
+            self._spawn_collectibles()
+            
+            # Initialize chests
+            self._spawn_chests()
+            
             # Center camera on player initially
             self.camera.center_on_target(self.player.pos_x, self.player.pos_y)
             
@@ -218,6 +228,51 @@ class Game:
             enemy = AssassinEnemy(world_x, world_y, scale=self.scale)
             self.enemies.append(enemy)
     
+    def _spawn_collectibles(self):
+        """Spawn collectibles from the world map data."""
+        if not self.world:
+            return
+            
+        # Find all collectible spawn points
+        collectible_spawns = self.world.find_collectible_spawn_points()
+        
+        for spawn_info in collectible_spawns:
+            collectible_name = spawn_info['name']
+            collectible_type = spawn_info['collectible_type']
+            world_x = spawn_info['world_x']
+            world_y = spawn_info['world_y']
+            
+            print(f"Spawning collectible '{collectible_name}' (type: {collectible_type}) at world position ({world_x}, {world_y})")
+            
+            # Create the appropriate collectible type
+            collectible = create_collectible(collectible_type, world_x, world_y, scale=self.scale)
+            if collectible:
+                self.collectibles.append(collectible)
+            else:
+                print(f"Warning: Failed to create collectible of type '{collectible_type}'")
+    
+    def _spawn_chests(self):
+        """Spawn chests from the world map data."""
+        if not self.world:
+            return
+            
+        # Find all chest spawn points
+        chest_spawns = self.world.find_chest_spawn_points()
+        
+        for spawn_info in chest_spawns:
+            chest_name = spawn_info['name']
+            chest_type = spawn_info['chest_type']
+            world_x = spawn_info['world_x']
+            world_y = spawn_info['world_y']
+            
+            print(f"Spawning chest '{chest_name}' (type: {chest_type}) at world position ({world_x}, {world_y})")
+            
+            # Create the chest
+            chest = Chest(world_x, world_y, chest_type=chest_type)
+            self.chests.append(chest)
+    
+    
+    
     def _get_input_state(self) -> dict:
         """Get current input state."""
         keys = pygame.key.get_pressed()
@@ -229,7 +284,8 @@ class Game:
             'jump': keys[pygame.K_SPACE] or keys[pygame.K_w],
             'dash': keys[pygame.K_q],
             'attack': keys[pygame.K_f],
-            'roll': keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]
+            'roll': keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT],
+            'interact': keys[pygame.K_e]  # E key for interactions
         }
     
     def _update_game(self, dt: float, input_state: dict):
@@ -242,6 +298,17 @@ class Game:
             for enemy in self.enemies:
                 enemy.update(dt, self.world)
             
+            # Update collectibles
+            for collectible in self.collectibles:
+                collectible.update(dt)
+            
+            # Update chests
+            for chest in self.chests:
+                chest.update(dt)
+            
+            # Check for player interactions with chests
+            self._check_player_chest_interactions(input_state)
+            
             # Remove dead enemies
             self._remove_dead_enemies()
             
@@ -250,6 +317,9 @@ class Game:
             
             # Check for enemies hitting player
             self._check_enemy_player_collisions()
+            
+            # Check for player collecting items
+            self._check_player_collectible_collisions()
             
             # Check if player requested respawn
             if self.player.respawn_requested:
@@ -443,6 +513,70 @@ class Game:
                     print(f"Player hit by enemy! Health: {self.player.health}/{self.player.max_health}")
                     break  # Only hit by one enemy per frame
     
+    def _check_player_collectible_collisions(self):
+        """Check for collisions between player and collectibles."""
+        if not self.player or self.player.is_dead:
+            return
+        
+        # Player collision box
+        player_width = 20 * self.scale
+        player_height = 35 * self.scale
+        player_rect = pygame.Rect(
+            self.player.pos_x - player_width // 2,
+            self.player.pos_y - player_height,
+            player_width,
+            player_height
+        )
+        
+        # Check collision with each collectible
+        collectibles_to_remove = []
+        for i, collectible in enumerate(self.collectibles):
+            if collectible.check_player_collision(player_rect):
+                # Player touched the collectible
+                result = collectible.collect(self.player)
+                
+                if result.get('collected', False):
+                    # Apply collection effects
+                    effects = result.get('effects', {})
+                    
+                    # Handle health restoration
+                    if 'health_restore' in effects:
+                        health_restored = effects['health_restore']
+                        old_health = self.player.health
+                        self.player.health = min(self.player.max_health, self.player.health + health_restored)
+                        actual_restored = self.player.health - old_health
+                        print(f"Health restored: +{actual_restored} (Total: {self.player.health}/{self.player.max_health})")
+                    
+                    # Show collection message
+                    if 'message' in effects:
+                        print(f"Collectible effect: {effects['message']}")
+                    
+                    # Mark for removal
+                    collectibles_to_remove.append(i)
+        
+        # Remove collected items in reverse order to avoid index shifting
+        for i in reversed(collectibles_to_remove):
+            del self.collectibles[i]
+    
+    def _check_player_chest_interactions(self, input_state: dict):
+        """Check for player interactions with chests."""
+        if not self.player or not input_state.get('interact', False):
+            return
+            
+        # Player center position (use player's collision dimensions)
+        player_x = self.player.pos_x  # Player position is already center X
+        player_y = self.player.pos_y - 15  # Player center Y (middle of player body)
+        
+        # Check each chest for interaction
+        for chest in self.chests:
+            if chest.is_player_nearby(player_x, player_y, interaction_distance=64):
+                # Attempt to interact with chest
+                if chest.interact(self.player):
+                    print(f"Player interacted with chest at ({chest.x}, {chest.y})")
+                    # TODO: Add interaction feedback (sound, particles, etc.)
+                    break  # Only interact with one chest per frame
+    
+    
     def _handle_player_respawn(self):
         """Handle player respawn by restarting the level."""
         if not self.player or not self.world:
@@ -491,6 +625,14 @@ class Game:
             
             # Render world
             self.world.render(self.screen, camera_x, camera_y)
+            
+            # Render collectibles (behind player and enemies)
+            for collectible in self.collectibles:
+                collectible.render(self.screen, camera_x, camera_y)
+            
+            # Render chests (behind player and enemies)
+            for chest in self.chests:
+                chest.render(self.screen, camera_x, camera_y)
             
             # Render enemies
             for enemy in self.enemies:
@@ -628,3 +770,5 @@ class Game:
         self.world = None
         self.camera = None
         self.enemies.clear()
+        self.collectibles.clear()
+        self.chests.clear()

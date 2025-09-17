@@ -98,19 +98,19 @@ class ChestAnimationLoader(InteractableAnimationLoader):
     """
     
     CHEST_ANIMATIONS = {
-        'closed': 'Closed',      # Default closed state
-        'opening': 'Opening',    # Opening transition
-        'open': 'Open',          # Final open state
-        'highlight': 'Highlight', # Player proximity feedback
-        'idle': 'Closed',        # Alias for closed state
+        'idle': 'idle',         # Default closed state (1 frame)
+        'opening': 'open',      # Opening transition animation (frames 1-34)  
+        'used': 'used',         # Final opened state (1 frame)
+        'closed': 'idle',       # Alias for idle state
+        'open': 'used',         # Alias for used state after opening
     }
     
-    REQUIRED_ANIMATIONS = ['closed', 'open']
+    REQUIRED_ANIMATIONS = ['idle', 'open', 'used']
     
     FALLBACK_CHAINS = {
-        'opening': ['open', 'closed'],
-        'highlight': ['closed'],
-        'idle': ['closed'],
+        'opening': ['used', 'idle'],
+        'closed': ['idle'],
+        'open': ['used', 'idle'],
     }
     
     def __init__(self, json_path: str, scale: int = 2):
@@ -127,6 +127,10 @@ class ChestAnimationLoader(InteractableAnimationLoader):
     def has_opening_animation(self) -> bool:
         """Check if opening transition animation is available."""
         return self.has_animation('opening')
+        
+    def has_used_state(self) -> bool:
+        """Check if used (opened) state animation is available."""
+        return self.has_animation('used')
 
 
 class DoorAnimationLoader(InteractableAnimationLoader):

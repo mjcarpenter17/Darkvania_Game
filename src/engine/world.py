@@ -136,6 +136,110 @@ class World:
                 
         return enemy_spawns
     
+    def find_collectible_spawn_points(self) -> List[Dict]:
+        """Find all collectible spawn points and convert to world coordinates."""
+        collectible_spawns = []
+        for obj in self.objects:
+            if obj.get('type') == 'collectible':
+                # Convert tile coordinates to world coordinates
+                world_x = obj.get('x', 0) * self.tile_size * self.scale
+                world_y = obj.get('y', 0) * self.tile_size * self.scale
+                
+                # Determine collectible type from name (e.g., "Collectible_01" -> "bandage")
+                obj_name = obj.get('name', 'Unknown')
+                collectible_type = self._parse_collectible_type(obj_name, obj)
+                
+                spawn_info = {
+                    'name': obj_name,
+                    'collectible_type': collectible_type,
+                    'world_x': world_x,
+                    'world_y': world_y,
+                    'tile_x': obj.get('x', 0),
+                    'tile_y': obj.get('y', 0),
+                    'custom_properties': obj.get('custom_properties', {})
+                }
+                collectible_spawns.append(spawn_info)
+                
+        return collectible_spawns
+    
+    def find_chest_spawn_points(self) -> List[Dict]:
+        """Find all chest spawn points and convert to world coordinates."""
+        chest_spawns = []
+        for obj in self.objects:
+            obj_name = obj.get('name', 'Unknown')
+            obj_type = obj.get('type', '')
+            
+            is_chest = False
+            chest_type = "basic"
+            
+            # Primary check: object type is 'chest'
+            if obj_type == 'chest':
+                is_chest = True
+                # Parse chest type from name if present
+                if 'gold' in obj_name.lower():
+                    chest_type = "gold"
+                elif 'silver' in obj_name.lower():
+                    chest_type = "silver"
+                elif 'magic' in obj_name.lower():
+                    chest_type = "magic"
+            
+            # Fallback check: collectible type objects with 'chest' in name (legacy support)
+            elif obj_type == 'collectible' and 'chest' in obj_name.lower():
+                is_chest = True
+                print(f"Warning: Found chest object '{obj_name}' with 'collectible' type. Consider changing to 'chest' type.")
+            
+            if is_chest:
+                # Convert tile coordinates to world coordinates
+                world_x = obj.get('x', 0) * self.tile_size * self.scale
+                world_y = obj.get('y', 0) * self.tile_size * self.scale
+                
+                spawn_info = {
+                    'name': obj_name,
+                    'chest_type': chest_type,
+                    'world_x': world_x,
+                    'world_y': world_y,
+                    'tile_x': obj.get('x', 0),
+                    'tile_y': obj.get('y', 0),
+                    'custom_properties': obj.get('custom_properties', {})
+                }
+                chest_spawns.append(spawn_info)
+                print(f"Found chest spawn: {obj_name} at tile ({obj.get('x', 0)}, {obj.get('y', 0)}) -> world ({world_x}, {world_y})")
+                
+        return chest_spawns
+    
+    def _parse_collectible_type(self, obj_name: str, obj: Dict) -> str:
+        """
+        Parse the collectible type from object name or properties.
+        
+        Args:
+            obj_name: Name of the object (e.g., "Collectible_01")
+            obj: Full object data
+            
+        Returns:
+            str: Collectible type (e.g., "bandage", "key", "ammo")
+        """
+        # Check if custom properties specify the type
+        custom_props = obj.get('custom_properties', {})
+        if 'collectible_type' in custom_props:
+            return custom_props['collectible_type']
+        
+        # Check for type in the name
+        obj_name_lower = obj_name.lower()
+        if 'bandage' in obj_name_lower:
+            return 'bandage'
+        elif 'key' in obj_name_lower:
+            return 'key'
+        elif 'ammo' in obj_name_lower:
+            return 'ammo'
+        elif 'health' in obj_name_lower:
+            return 'bandage'
+        elif 'potion' in obj_name_lower or 'bottle' in obj_name_lower:
+            return 'bottle'
+        
+        # Default fallback - for now, use bandage for testing
+        # TODO: This could be configurable or read from map editor
+        return 'bandage'
+    
     def get_tile_at(self, world_x: float, world_y: float, layer_index: int = 0) -> int:
         """Get the tile ID at a world position (returns -1 if no tile)."""
         tile_x = int(world_x // (self.tile_size * self.scale))

@@ -447,6 +447,124 @@ DOOR_ANIMATIONS = {
 }
 ```
 
+### CollectibleAnimationLoader
+
+Specialized loader for collectible items that can be picked up by the player.
+
+#### Constructor
+
+```python
+CollectibleAnimationLoader(json_path: str, scale: int = 2)
+```
+
+#### Constants
+
+```python
+COLLECTIBLE_ANIMATIONS = {
+    'idle': 'Idle',
+    'highlight': 'Highlight',
+    'collect': 'Collect',
+    'sparkle': 'Sparkle',
+    'glow': 'Glow',
+}
+
+REQUIRED_ANIMATIONS = ['idle']
+
+FALLBACK_CHAINS = {
+    'highlight': ['idle'],
+    'collect': ['highlight', 'idle'],
+    'sparkle': ['idle'],
+    'glow': ['idle'],
+}
+```
+
+#### Methods
+
+#### `load_collectible_animations() -> bool`
+Load collectible-specific animations using standard mappings.
+
+**Returns**: `bool` - True if successful
+
+#### `has_collection_effect() -> bool`
+Check if collection animation is available.
+
+**Returns**: `bool` - True if collection animation exists
+
+#### Advanced Pattern: Direct Animation Mapping
+
+**Key Discovery**: For collectibles with specific animation names in Aseprite (e.g., 'bandage', 'key', 'ammo'), you can bypass the standard state mappings and directly use the Aseprite animation names:
+
+```python
+# Example: Loading specific collectible animation directly
+loader = CollectibleAnimationLoader("Assests/collectibles/collects.json", scale=2)
+
+# Check if specific collectible animation exists
+if loader.aseprite_loader.get_animation('bandage'):
+    # Load the specific animation directly
+    success = loader._load_animation('bandage', 'bandage')
+    
+    # Use 'bandage' as the animation name instead of 'idle'
+    current_animation = 'bandage'
+```
+
+**Benefits of Direct Mapping**:
+- More intuitive animation names
+- Supports multiple collectible types in one sprite sheet
+- Preserves specific animation characteristics (frame count, timing)
+- Eliminates need for generic state mappings
+
+#### Fallback Pattern: Procedural Graphics
+
+**Key Discovery**: Robust fallback system that creates procedural graphics when sprite data is unavailable:
+
+```python
+def create_fallback_surface(collectible_type: str, size: int) -> pygame.Surface:
+    """Create procedural fallback graphics for collectibles."""
+    surface = pygame.Surface((size, size), pygame.SRCALPHA)
+    
+    # Color mapping for different collectible types
+    colors = {
+        'bandage': (255, 100, 100),  # Red for health
+        'key': (255, 255, 0),        # Yellow for keys
+        'ammo': (100, 100, 255),     # Blue for ammo
+        'bottle': (0, 255, 100),     # Green for potions
+    }
+    
+    color = colors.get(collectible_type, (255, 255, 255))
+    pygame.draw.rect(surface, color, (2, 2, size-4, size-4))
+    pygame.draw.rect(surface, (255, 255, 255), (0, 0, size, size), 2)
+    
+    return surface
+```
+
+**Fallback Benefits**:
+- Game never crashes due to missing sprites
+- Visual indication of collectible type
+- Maintains gameplay functionality during development
+- Easy to identify missing assets
+
+#### Usage Example
+
+```python
+# Standard approach with fallbacks
+collectible_loader = CollectibleAnimationLoader("path/to/collects.json", scale=2)
+
+# Method 1: Use standard mappings
+if collectible_loader.load_collectible_animations():
+    # Uses 'idle', 'collect', etc. animations
+    animation_data = collectible_loader.get_animation('idle')
+
+# Method 2: Direct animation mapping (preferred for specific types)
+if collectible_loader.load():
+    # Check for specific collectible animation
+    if collectible_loader.aseprite_loader.get_animation('bandage'):
+        collectible_loader._load_animation('bandage', 'bandage')
+        # Now use 'bandage' as animation name
+    else:
+        # Fallback to procedural graphics
+        fallback_surface = create_fallback_surface('bandage', 16 * scale)
+```
+
 ### Factory Function
 
 #### `create_interactable_loader(object_type: str, json_path: str, scale: int = 2) -> InteractableAnimationLoader`

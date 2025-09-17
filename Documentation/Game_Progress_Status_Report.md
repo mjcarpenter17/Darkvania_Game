@@ -2,15 +2,15 @@
 
 **Project**: Darkvania Game (2D Side-scrolling Action Game)  
 **Repository**: mjcarpenter17/Darkvania_Game  
-**Current Version**: v1.2.0  
-**Last Updated**: September 15, 2025  
-**Status**: **Production-Ready Core Systems Complete**
+**Current Version**: v1.3.0  
+**Last Updated**: September 17, 2025  
+**Status**: **Production-Ready Core Systems Complete + Interactive World**
 
 ---
 
 ## 📋 Executive Summary
 
-This document provides a comprehensive overview of the Darkvania Game project, detailing all implemented systems, features, and technical architecture. The game has evolved from a simple walk animation test into a robust 2D action game with complete combat, AI, health, and animation systems.
+This document provides a comprehensive overview of the Darkvania Game project, detailing all implemented systems, features, and technical architecture. The game has evolved from a simple walk animation test into a robust 2D action game with complete combat, AI, health, animation, and interactive world systems.
 
 ### 🏆 Current Status: **MAJOR MILESTONE ACHIEVED**
 - ✅ **Complete Player Character System** with movement, combat, health, and animations
@@ -18,6 +18,7 @@ This document provides a comprehensive overview of the Darkvania Game project, d
 - ✅ **Comprehensive Health & Respawn System** with visual feedback and level restart
 - ✅ **Professional Animation Framework** supporting complex state-based animations
 - ✅ **Robust World & Physics Engine** with collision detection and tile-based maps
+- ✅ **Complete Interactable System** with chests, collectibles, and E key interaction
 - ✅ **Production-Quality Code Architecture** with modular design and documentation
 
 ---
@@ -149,7 +150,34 @@ This document provides a comprehensive overview of the Darkvania Game project, d
 - **World Boundaries**: Proper camera limiting to world edges
 - **Smooth Interpolation**: Professional camera movement without jitter
 
-### 6. User Interface System ✅ **COMPLETE**
+### 6. Interactable Object System ✅ **COMPLETE**
+**Files**: `src/game/interactables.py`, `src/game/collectible.py`, `src/animations/interactable_animation_loader.py`
+
+**Interactable Framework:**
+- **Base Interactable Class**: Common functionality for all interactive objects
+- **Proximity Detection**: Distance-based interaction with visual feedback
+- **E Key Interaction**: Standardized interaction controls across all objects
+- **State Management**: Persistent object states with proper transitions
+
+**Collectible System:**
+- **BandageCollectible**: Health restoration items with floating mechanics
+- **Automatic Pickup**: Collision-based collection with visual effects
+- **Floating Animation**: 32-pixel floating height with sine wave bobbing
+- **Health Restoration**: Configurable health values with overflow handling
+
+**Chest System:**
+- **Full Animation Sequence**: idle → opening → used state transitions
+- **ChestAnimationLoader**: Specialized animation handling with proper frame mapping
+- **Interaction Flow**: E key proximity detection → opening animation → 2-second delay → used state
+- **Map Integration**: Spawns from map objects with gold color visualization in editor
+
+**Critical Technical Achievements:**
+- **Frame Index Bug Fix**: Resolved 1-based vs 0-based indexing in Aseprite loader
+- **Animation Bounds Logic**: Implemented proper frame increment bounds checking
+- **Pivot Point Handling**: Correct JSON pivot data loading without override
+- **State Transition Management**: Timer-based delays for natural animation flow
+
+### 7. User Interface System ✅ **COMPLETE**
 **Files**: `src/ui/game_state.py`
 
 **Game State Management:**
@@ -173,21 +201,28 @@ src/
 ├── game/               # Core game logic
 │   ├── player.py      # Player character system
 │   ├── enemy.py       # Enemy AI and behavior
+│   ├── interactables.py # Chest and interactable objects
+│   ├── collectible.py # Collectible items system
 │   └── game.py        # Main game coordinator
 ├── engine/            # Game engine systems
 │   ├── world.py       # World/map management
 │   └── camera.py      # Camera system
+├── animations/        # Animation systems
+│   ├── base_animation_loader.py      # Core animation framework
+│   ├── entity_animation_loader.py   # Entity-specific loaders
+│   └── interactable_animation_loader.py # Interactable loaders
 ├── ui/                # User interface
 │   └── game_state.py  # UI and state management
 └── utils/             # Utility systems
-    └── aseprite_animation_loader.py  # Animation framework
+    └── aseprite_loader.py  # Aseprite JSON parsing
 ```
 
 ### Key Architecture Patterns
 
-**State Machines**: Both player and enemy use clean state machines for behavior management
+**State Machines**: All game entities use clean state machines for behavior management
 - Player: spawning → alive → dead → respawn cycle
 - Enemy: patrol ↔ idle → hit → death → removal
+- Chest: closed → opening → used (permanent state)
 
 **Component Architecture**: Modular systems with clear separation of concerns
 - Movement, combat, health, and animation systems are independently manageable

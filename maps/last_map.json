@@ -6912,18 +6912,6 @@
   },
   "objects": [
     {
-      "type": "spawn",
-      "color": [
-        80,
-        150,
-        255
-      ],
-      "name": "Player",
-      "x": 30,
-      "y": 24,
-      "custom_properties": {}
-    },
-    {
       "type": "enemy",
       "color": [
         255,
@@ -6933,6 +6921,42 @@
       "name": "Enemy_01",
       "x": 42,
       "y": 29,
+      "custom_properties": {}
+    },
+    {
+      "type": "collectible",
+      "color": [
+        80,
+        255,
+        80
+      ],
+      "name": "Collectible_02",
+      "x": 11,
+      "y": 30,
+      "custom_properties": {}
+    },
+    {
+      "type": "spawn",
+      "color": [
+        80,
+        150,
+        255
+      ],
+      "name": "Player",
+      "x": 30,
+      "y": 33,
+      "custom_properties": {}
+    },
+    {
+      "type": "chest",
+      "color": [
+        223,
+        197,
+        123
+      ],
+      "name": "Chest_01",
+      "x": 6,
+      "y": 30,
       "custom_properties": {}
     }
   ]
